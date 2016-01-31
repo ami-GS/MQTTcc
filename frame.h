@@ -22,7 +22,7 @@ enum MessageType {
     PINGREQ_MESSAGE_TYPE,
     PINGRESP_MESSAGE_TYPE,
     DISCONNECT_MESSAGE_TYPE,
-    RESERVED_15
+    RESERVED_15,
 };
 
 //typedef uint8_t ConnectFlag;
@@ -37,6 +37,15 @@ enum ConnectFlag {
     WILL_RETAIN_FLAG,
     PASSWORD_FLAG,
     USERNAME_FLAG,
+};
+
+enum ConnectReturnCode {
+    CONNECT_ACCEPTED = 0,
+    CONNECT_UNNACCEPTABLE_PROTOCOL_VERSION,
+    CONNECT_IDENTIFIER_REJECTED,
+    CONNECT_SERVER_UNAVAILABLE,
+    CONNECT_BAD_USERNAME_OR_PASSWORD,
+    CONNECT_NOT_AUTHORIZED,
 };
 
 struct Will {
@@ -65,8 +74,8 @@ public:
     uint16_t PacketID;
     FixedHeader(MessageType type, bool dup, uint8_t qos, bool retain, uint32_t length, uint16_t id); 
     ~FixedHeader() {};
-    int64_t GetWire(uint8_t* buf);
-    std::string String();
+    virtual int64_t GetWire(uint8_t* wire);
+    virtual std::string String();
 };
 
 class ConnectMessage : public FixedHeader {
@@ -78,7 +87,107 @@ class ConnectMessage : public FixedHeader {
     struct User* User;
 
     ConnectMessage(uint16_t keepAlive, std::string id, bool cleanSession, struct Will* will, struct User* user);
+    ~ConnectMessage() {};
+    int64_t GetWire(uint8_t* wire);
 };
+
+
+class ConnackMessage : public FixedHeader {
+    bool SessionPresent;
+    ConnectReturnCode ReturnCode;
+    ConnackMessage(bool sp, ConnectReturnCode code);
+    ~ConnackMessage() {};
+};
+
+
+class PublishMessage : public FixedHeader {
+    std::string topicName;
+    std::string payload;
+    PublishMessage(bool dup, uint8_t qos, bool retain, uint16_t id, std::string topic, std::string payload);
+    ~PublishMessage() {};
+};
+
+class PubackMessage : public FixedHeader {
+    PubackMessage(uint16_t id);
+    ~PubackMessage() {};
+};
+
+
+class PubrecMessage : public FixedHeader {
+    PubrecMessage(uint16_t id);
+    ~PubrecMessage() {};
+};
+
+class PubrelMessage : public FixedHeader {
+    PubrelMessage(uint16_t id);
+    ~PubrelMessage() {};
+};
+
+class PubcompMessage : public FixedHeader {
+    PubcompMessage(uint16_t id);
+    ~PubcompMessage() {};
+};
+
+struct SubscribeTopic {
+    std::string topic;
+    uint8_t qos;
+};
+
+class SubscribeMessage : public FixedHeader {
+    SubscribeTopic** subTopics;
+    
+    SubscribeMessage(uint16_t id, SubscribeTopic** topics, int topicNum);
+    ~SubscribeMessage() {};
+};
+
+enum SubackCode {
+    ACK_MAX_QOS0 = 0,
+    ACK_MAX_QOS1,
+    ACK_MAX_QOS2,
+    FAILURE,
+};
+
+class SubackMessage : public FixedHeader {
+    SubackCode* returnCodes;
+
+    SubackMessage(uint16_t id, SubackCode* codes, int codeNum);
+    ~SubackMessage() {};
+};
+
+class UnsubscribeMessage : public FixedHeader {
+    std::string* topics;
+
+    UnsubscribeMessage(uint16_t id, std::string* topics, int topicNum);
+    ~UnsubscribeMessage() {};
+};
+
+class UnsubackMessage : public FixedHeader {
+    UnsubackMessage(uint16_t id);
+    ~UnsubackMessage() {};
+};
+
+class PingreqMessage : public FixedHeader {
+    PingreqMessage();
+    ~PingreqMessage() {};
+};
+
+class PingrespMessage : public FixedHeader {
+    PingrespMessage();
+    ~PingrespMessage() {};
+};
+
+class DisconnectMessage : public FixedHeader {
+    DisconnectMessage();
+    ~DisconnectMessage() {};
+};
+
+
+
+
+
+
+
+
 
 
 #endif // MQTT_FRAME_H

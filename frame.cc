@@ -30,3 +30,38 @@ ConnectMessage::ConnectMessage(uint16_t keepAlive, std::string id, bool cleanSes
    
     Length = length;
 }
+
+ConnackMessage::ConnackMessage(bool sp, ConnectReturnCode code) : SessionPresent(sp), ReturnCode(code), FixedHeader(CONNACK_MESSAGE_TYPE, false, 0, false, 2, 0) {}
+
+PublishMessage::PublishMessage(bool dup, uint8_t qos, bool retain, uint16_t id, std::string topic, std::string payload) : topicName(topic), payload(payload), FixedHeader(PUBLISH_MESSAGE_TYPE, dup, qos, retain, topic.size()+payload.size()+2, id) {
+    if (qos > 0) {
+        Length += 2;
+    } else if (id != 0) {
+        // warnning
+    }
+}
+
+PubackMessage::PubackMessage(uint16_t id) : FixedHeader(PUBACK_MESSAGE_TYPE, false, 0, false, 2, id) {}
+PubrecMessage::PubrecMessage(uint16_t id) : FixedHeader(PUBREC_MESSAGE_TYPE, false, 0, false, 2, id) {}
+PubrelMessage::PubrelMessage(uint16_t id) : FixedHeader(PUBREL_MESSAGE_TYPE, false, 1, false, 2, id) {}
+PubcompMessage::PubcompMessage(uint16_t id) : FixedHeader(PUBCOMP_MESSAGE_TYPE, false, 0, false, 2, id) {}
+
+SubscribeMessage::SubscribeMessage(uint16_t id, SubscribeTopic** topics, int topicNum) : subTopics(topics), FixedHeader(SUBSCRIBE_MESSAGE_TYPE, false, 1, false, 2+topicNum, id) {
+    for (int i = 0; i < topicNum; i++) {
+        Length += topics[i]->topic.size();
+    }
+}
+
+SubackMessage::SubackMessage(uint16_t id, SubackCode* codes, int codeNum) : returnCodes(codes), FixedHeader(SUBACK_MESSAGE_TYPE, false, 0, false, 2+codeNum, id) {}
+
+
+UnsubscribeMessage::UnsubscribeMessage(uint16_t id, std::string* topics, int topicNum) : topics(topics), FixedHeader(UNSUBSCRIBE_MESSAGE_TYPE, false, 1, false, 2 + 2*topicNum, id) {
+    for (int i = 0; i < topicNum; i++) {
+        Length += (*topics).size();
+    }
+}
+
+UnsubackMessage::UnsubackMessage(uint16_t id) : FixedHeader(UNSUBACK_MESSAGE_TYPE, false, 0, false, 2, id) {};
+PingreqMessage::PingreqMessage() : FixedHeader(PINGREQ_MESSAGE_TYPE, false, 0, false, 0, 0) {};
+PingrespMessage::PingrespMessage() : FixedHeader(PINGRESP_MESSAGE_TYPE, false, 0, false, 0, 0) {};
+DisconnectMessage::DisconnectMessage() : FixedHeader(DISCONNECT_MESSAGE_TYPE, false, 0, false, 0, 0) {};
