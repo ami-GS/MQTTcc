@@ -1,31 +1,22 @@
 #include <stdint.h>
 #include "frame.h"
+#include "util.h"
 
 FixedHeader::FixedHeader(MessageType type, bool dup, uint8_t qos, bool retain, uint32_t length, uint16_t id) :
 Type(type), Dup(dup), QoS(qos), Retain(retain), Length(length), PacketID(id) {}
 
 int64_t FixedHeader::GetWire(uint8_t* wire) {
-    uint8_t* st = wire;
-    int wireLen = 0;
-    if (Length <= 0x7f) {
-        wireLen = 1;
-    } else if (Length <= 0x3fff) {
-        wireLen = 2;
-    } else if (Length <= 0x1fffff) {
-        wireLen = 3;
-    } else if (Length <= 0x0fffffff) {
-        wireLen = 4;
-    }
-    *wire = (uint8_t)Type << 4;
+    uint8_t* buf = wire;
+    *buf = (uint8_t)Type << 4;
     if (Dup) {
-        *wire |= 0x08;
+        *buf |= 0x08;
     }
-    *wire |= (QoS << 1);
+    *buf |= (QoS << 1);
     if (Retain) {
-        *wire |= 0x01;
+        *buf |= 0x01;
     }
-    //len = RemainEncode(++wire, Length)
-    return wire - st;// + len
+    int32_t len = remainEncode(++buf, Length);
+    return buf - wire + len;
 }
 
 
@@ -57,11 +48,52 @@ ConnectMessage::ConnectMessage(uint16_t keepAlive, std::string id, bool cleanSes
 }
 
 int64_t ConnectMessage::GetWire(uint8_t* wire) {
-    uint8_t* st = wire;
-    int64_t fh_len = FixedHeader::GetWire(wire);
-    wire += fh_len;
-    // l = UTF8_encode(wire, )
-    return fh_len;
+    uint8_t* buf = wire;
+    int64_t len = FixedHeader::GetWire(buf);
+    if (len == -1) {
+        return -1;
+    }
+    buf += len;
+    len = UTF8_encode(buf, MQTT_3_1_1.name);
+    buf += len;
+    *(buf++) = MQTT_3_1_1.level;
+    *(buf++) = Flags;
+
+    *(buf++) = (uint8_t)(KeepAlive >> 8);
+    *(buf++) = (uint8_t)KeepAlive;
+    len = UTF8_encode(buf, ClientID);
+    if (len == -1) {
+        return -1;
+    }
+    buf += len;
+
+    if ((Flags & WILL_FLAG) == WILL_FLAG) {
+        len = UTF8_encode(buf, Will->Topic);
+        if (len == -1) {
+            return -1;
+        }
+        buf += len;
+        len = UTF8_encode(buf, Will->Message);
+        if (len == -1) {
+            return -1;
+        }
+        buf += len;
+    }
+    if ((Flags & USERNAME_FLAG) == USERNAME_FLAG) {
+        len = UTF8_encode(buf, User->Name);
+        if (len == -1) {
+            return -1;
+        }
+        buf += len;
+    }
+    if ((Flags & PASSWORD_FLAG) == PASSWORD_FLAG) {
+        len = UTF8_encode(buf, User->Passwd);
+        if (len == -1) {
+            return -1;
+        }
+        buf += len;
+    }
+    return buf - wire;
 }
 
 
