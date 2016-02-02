@@ -99,6 +99,21 @@ int64_t ConnectMessage::GetWire(uint8_t* wire) {
 
 ConnackMessage::ConnackMessage(bool sp, ConnectReturnCode code) : SessionPresent(sp), ReturnCode(code), FixedHeader(CONNACK_MESSAGE_TYPE, false, 0, false, 2, 0) {}
 
+int64_t ConnackMessage::GetWire(uint8_t* wire) {
+    uint8_t* buf = wire;
+    int64_t len = FixedHeader::GetWire(buf);
+    if (len == -1) {
+        return -1;
+    }
+    buf += len;
+    if (SessionPresent) {
+        *(buf++) = 0x01;
+    }
+    *(buf++) = (uint8_t)ReturnCode;
+
+    return buf - wire;
+}
+
 PublishMessage::PublishMessage(bool dup, uint8_t qos, bool retain, uint16_t id, std::string topic, std::string payload) : topicName(topic), payload(payload), FixedHeader(PUBLISH_MESSAGE_TYPE, dup, qos, retain, topic.size()+payload.size()+2, id) {
     if (qos > 0) {
         Length += 2;
@@ -107,10 +122,78 @@ PublishMessage::PublishMessage(bool dup, uint8_t qos, bool retain, uint16_t id, 
     }
 }
 
+int64_t PublishMessage::GetWire(uint8_t* wire) {
+    uint8_t* buf = wire;
+    int64_t len = FixedHeader::GetWire(buf);
+    if (len == -1) {
+        return -1;
+    }
+    buf += len;
+    len = UTF8_encode(buf, topicName);
+    if (QoS > 0) {
+        *(buf++) = (uint8_t)(PacketID >> 8);
+        *(buf++) = (uint8_t)PacketID;
+    }
+    memcpy(buf, payload.c_str(), payload.size());
+    buf += payload.size();
+    return buf - wire;
+}
+
 PubackMessage::PubackMessage(uint16_t id) : FixedHeader(PUBACK_MESSAGE_TYPE, false, 0, false, 2, id) {}
+
+int64_t PubackMessage::GetWire(uint8_t* wire) {
+    uint8_t* buf = wire;
+    int64_t len = FixedHeader::GetWire(buf);
+    if (len == -1) {
+        return -1;
+    }
+    buf += len;
+    *(buf++) = (uint8_t)(PacketID >> 8);
+    *(buf++) = (uint8_t)PacketID;
+    return buf - wire;
+}
+
 PubrecMessage::PubrecMessage(uint16_t id) : FixedHeader(PUBREC_MESSAGE_TYPE, false, 0, false, 2, id) {}
+
+int64_t PubrecMessage::GetWire(uint8_t* wire) {
+    uint8_t* buf = wire;
+    int64_t len = FixedHeader::GetWire(buf);
+    if (len == -1) {
+        return -1;
+    }
+    buf += len;
+    *(buf++) = (uint8_t)(PacketID >> 8);
+    *(buf++) = (uint8_t)PacketID;
+    return buf - wire;
+}
+
 PubrelMessage::PubrelMessage(uint16_t id) : FixedHeader(PUBREL_MESSAGE_TYPE, false, 1, false, 2, id) {}
+
+int64_t PubrelMessage::GetWire(uint8_t* wire) {
+    uint8_t* buf = wire;
+    int64_t len = FixedHeader::GetWire(buf);
+    if (len == -1) {
+        return -1;
+    }
+    buf += len;
+    *(buf++) = (uint8_t)(PacketID >> 8);
+    *(buf++) = (uint8_t)PacketID;
+    return buf - wire;
+}
+
 PubcompMessage::PubcompMessage(uint16_t id) : FixedHeader(PUBCOMP_MESSAGE_TYPE, false, 0, false, 2, id) {}
+
+int64_t PubcompMessage::GetWire(uint8_t* wire) {
+    uint8_t* buf = wire;
+    int64_t len = FixedHeader::GetWire(buf);
+    if (len == -1) {
+        return -1;
+    }
+    buf += len;
+    *(buf++) = (uint8_t)(PacketID >> 8);
+    *(buf++) = (uint8_t)PacketID;
+    return buf - wire;
+}
 
 SubscribeMessage::SubscribeMessage(uint16_t id, SubscribeTopic** topics, int topicNum) : subTopics(topics), FixedHeader(SUBSCRIBE_MESSAGE_TYPE, false, 1, false, 2+topicNum, id) {
     for (int i = 0; i < topicNum; i++) {
@@ -118,8 +201,45 @@ SubscribeMessage::SubscribeMessage(uint16_t id, SubscribeTopic** topics, int top
     }
 }
 
+int64_t SubscribeMessage::GetWire(uint8_t* wire) {
+    uint8_t* buf = wire;
+    int64_t len = FixedHeader::GetWire(buf);
+    if (len == -1) {
+        return -1;
+    }
+    buf += len;
+    *(buf++) = (uint8_t)(PacketID >> 8);
+    *(buf++) = (uint8_t)PacketID;
+    int payload_len = 2;
+    for (int i = 0; payload_len < Length; i++) {
+        len = UTF8_encode(buf, subTopics[i]->topic);
+        if (len == -1) {
+            return -1;
+        }
+        buf += len;
+        *(buf++) = subTopics[i]->qos;
+        payload_len += len + 1;
+    }
+    return buf - wire;
+}
+
 SubackMessage::SubackMessage(uint16_t id, SubackCode* codes, int codeNum) : returnCodes(codes), FixedHeader(SUBACK_MESSAGE_TYPE, false, 0, false, 2+codeNum, id) {}
 
+
+int64_t SubackMessage::GetWire(uint8_t* wire) {
+    uint8_t* buf = wire;
+    int64_t len = FixedHeader::GetWire(buf);
+    if (len == -1) {
+        return -1;
+    }
+    buf += len;
+    *(buf++) = (uint8_t)(PacketID >> 8);
+    *(buf++) = (uint8_t)PacketID;
+    for (int i = 0; i < Length-2; i++) {
+        *(buf++) = returnCodes[i];
+    }
+    return buf - wire;
+}
 
 UnsubscribeMessage::UnsubscribeMessage(uint16_t id, std::string* topics, int topicNum) : topics(topics), FixedHeader(UNSUBSCRIBE_MESSAGE_TYPE, false, 1, false, 2 + 2*topicNum, id) {
     for (int i = 0; i < topicNum; i++) {
@@ -127,7 +247,75 @@ UnsubscribeMessage::UnsubscribeMessage(uint16_t id, std::string* topics, int top
     }
 }
 
+int64_t UnsubscribeMessage::GetWire(uint8_t* wire) {
+    uint8_t* buf = wire;
+    int64_t len = FixedHeader::GetWire(buf);
+    if (len == -1) {
+        return -1;
+    }
+    buf += len;
+    *(buf++) = (uint8_t)(PacketID >> 8);
+    *(buf++) = (uint8_t)PacketID;
+    int payload_len = 2;
+    for (int i = 0; payload_len < Length; i++) {
+        len = UTF8_encode(buf, topics[i]);
+        if (len == -1) {
+            return -1;
+        }
+        payload_len += len;
+        buf += len;
+
+    }
+
+    return buf - wire;
+}
+
 UnsubackMessage::UnsubackMessage(uint16_t id) : FixedHeader(UNSUBACK_MESSAGE_TYPE, false, 0, false, 2, id) {};
+
+int64_t UnsubackMessage::GetWire(uint8_t* wire) {
+    uint8_t* buf = wire;
+    int64_t len = FixedHeader::GetWire(buf);
+    if (len == -1) {
+        return -1;
+    }
+    buf += len;
+    *(buf++) = (uint8_t)(PacketID >> 8);
+    *(buf++) = (uint8_t)PacketID;
+    return buf - wire;
+}
+
 PingreqMessage::PingreqMessage() : FixedHeader(PINGREQ_MESSAGE_TYPE, false, 0, false, 0, 0) {};
+
+int64_t PingreqMessage::GetWire(uint8_t* wire) {
+    uint8_t* buf = wire;
+    int64_t len = FixedHeader::GetWire(buf);
+    if (len == -1) {
+        return -1;
+    }
+    buf += len;
+    return buf - wire;
+}
+
 PingrespMessage::PingrespMessage() : FixedHeader(PINGRESP_MESSAGE_TYPE, false, 0, false, 0, 0) {};
+
+int64_t PingrespMessage::GetWire(uint8_t* wire) {
+    uint8_t* buf = wire;
+    int64_t len = FixedHeader::GetWire(buf);
+    if (len == -1) {
+        return -1;
+    }
+    buf += len;
+    return buf - wire;
+}
+
 DisconnectMessage::DisconnectMessage() : FixedHeader(DISCONNECT_MESSAGE_TYPE, false, 0, false, 0, 0) {};
+
+int64_t DisconnectMessage::GetWire(uint8_t* wire) {
+    uint8_t* buf = wire;
+    int64_t len = FixedHeader::GetWire(buf);
+    if (len == -1) {
+        return -1;
+    }
+    buf += len;
+    return buf - wire;
+}

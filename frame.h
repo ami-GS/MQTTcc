@@ -98,6 +98,7 @@ class ConnackMessage : public FixedHeader {
     ConnectReturnCode ReturnCode;
     ConnackMessage(bool sp, ConnectReturnCode code);
     ~ConnackMessage() {};
+    int64_t GetWire(uint8_t* wire);
 };
 
 
@@ -106,27 +107,32 @@ class PublishMessage : public FixedHeader {
     std::string payload;
     PublishMessage(bool dup, uint8_t qos, bool retain, uint16_t id, std::string topic, std::string payload);
     ~PublishMessage() {};
+    int64_t GetWire(uint8_t* wire);
 };
 
 class PubackMessage : public FixedHeader {
     PubackMessage(uint16_t id);
     ~PubackMessage() {};
+    int64_t GetWire(uint8_t* wire);
 };
 
 
 class PubrecMessage : public FixedHeader {
     PubrecMessage(uint16_t id);
     ~PubrecMessage() {};
+    int64_t GetWire(uint8_t* wire);
 };
 
 class PubrelMessage : public FixedHeader {
     PubrelMessage(uint16_t id);
     ~PubrelMessage() {};
+    int64_t GetWire(uint8_t* wire);
 };
 
 class PubcompMessage : public FixedHeader {
     PubcompMessage(uint16_t id);
     ~PubcompMessage() {};
+    int64_t GetWire(uint8_t* wire);
 };
 
 struct SubscribeTopic {
@@ -139,6 +145,7 @@ class SubscribeMessage : public FixedHeader {
     
     SubscribeMessage(uint16_t id, SubscribeTopic** topics, int topicNum);
     ~SubscribeMessage() {};
+    int64_t GetWire(uint8_t* wire);
 };
 
 enum SubackCode {
@@ -153,6 +160,8 @@ class SubackMessage : public FixedHeader {
 
     SubackMessage(uint16_t id, SubackCode* codes, int codeNum);
     ~SubackMessage() {};
+
+    int64_t GetWire(uint8_t* wire);
 };
 
 class UnsubscribeMessage : public FixedHeader {
@@ -160,26 +169,36 @@ class UnsubscribeMessage : public FixedHeader {
 
     UnsubscribeMessage(uint16_t id, std::string* topics, int topicNum);
     ~UnsubscribeMessage() {};
+
+    int64_t GetWire(uint8_t* wire);
 };
 
 class UnsubackMessage : public FixedHeader {
     UnsubackMessage(uint16_t id);
     ~UnsubackMessage() {};
+
+    int64_t GetWire(uint8_t* wire);
 };
 
 class PingreqMessage : public FixedHeader {
     PingreqMessage();
     ~PingreqMessage() {};
+
+    int64_t GetWire(uint8_t* wire);
 };
 
 class PingrespMessage : public FixedHeader {
     PingrespMessage();
     ~PingrespMessage() {};
+
+    int64_t GetWire(uint8_t* wire);
 };
 
 class DisconnectMessage : public FixedHeader {
     DisconnectMessage();
     ~DisconnectMessage() {};
+
+    int64_t GetWire(uint8_t* wire);
 };
 
 
