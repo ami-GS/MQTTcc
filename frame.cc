@@ -32,7 +32,7 @@ int64_t FixedHeader::GetWire(uint8_t* wire) {
 
 ConnectMessage::ConnectMessage(uint16_t keepAlive, std::string id, bool cleanSession, struct Will* will, struct User* user) :
     KeepAlive(keepAlive), ClientID(id), CleanSession(cleanSession), Will(will), User(user), Flags(0), FixedHeader(CONNECT_MESSAGE_TYPE, false, 0, false, 0, 0) {
-    uint32_t length = 6 + MQTT_3_1_1_NAME.size() + 2 + id.size();
+    uint32_t length = 6 + MQTT_3_1_1.name.size() + 2 + id.size();
     if (cleanSession) {
         Flags |= 1; //CLEANSESSION_FLAG;
         

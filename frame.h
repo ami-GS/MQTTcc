@@ -60,9 +60,10 @@ struct User {
     std::string Passwd;
 };
 
-static const std::string MQTT_3_1_1_NAME = "MQTT";
-static const uint8_t MQTT_3_1_1_LEVEL = 4;
-
+const static struct {
+    std::string  name;
+    uint8_t     level;
+} MQTT_3_1_1 = {"MQTT", 4};
 
 class FixedHeader {
 public:
