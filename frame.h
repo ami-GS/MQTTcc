@@ -25,6 +25,25 @@ enum MessageType {
     RESERVED_15,
 };
 
+static const std::string TypeString[] = {
+    "RESERVED_0",
+    "CONNECT",
+    "CONNACK",
+    "PUBLISH"
+    "PUBACK",
+    "PUBREC",
+    "PUBREL",
+    "PUBCOMP",
+    "SUBSCRIBE",
+    "SUBACK",
+    "UNSUBSCRIBE",
+    "UNSUBACK",
+    "PINGREQ",
+    "PINGRESP",
+    "DISCONNECT",
+    "RESERVED_15",
+};
+
 //typedef uint8_t ConnectFlag;
 enum ConnectFlag {
     RESERVED_FLAG = 1,
