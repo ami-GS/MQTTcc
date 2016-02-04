@@ -77,7 +77,7 @@ struct User {
     std::string Passwd;
 };
 
-const static struct {
+const static struct MQTT_VERSION {
     std::string  name;
     uint8_t     level;
 } MQTT_3_1_1 = {"MQTT", 4};
@@ -103,6 +103,7 @@ class ConnectMessage : public FixedHeader {
     bool CleanSession;
     struct Will* Will;
     struct User* User;
+    struct MQTT_VERSION Protocol;
 
     ConnectMessage(uint16_t keepAlive, std::string id, bool cleanSession, struct Will* will, struct User* user);
     ~ConnectMessage() {};
