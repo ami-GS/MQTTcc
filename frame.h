@@ -44,19 +44,17 @@ static const std::string TypeString[] = {
     "RESERVED_15",
 };
 
-//typedef uint8_t ConnectFlag;
-enum ConnectFlag {
-    RESERVED_FLAG = 1,
-    CLEANSESSION_FLAG,
-    WILL_FLAG,
-    WILL_QOS0_FLAG,
-    WILL_QOS1_FLAG,
-    WILL_QOS2_FLAG,
-    WILL_QOS3_FLAG,
-    WILL_RETAIN_FLAG,
-    PASSWORD_FLAG,
-    USERNAME_FLAG,
-};
+typedef uint8_t ConnectFlag;
+const static ConnectFlag RESERVED_FLAG     = 0x01;
+const static ConnectFlag CLEANSESSION_FLAG = 0x02;
+const static ConnectFlag WILL_FLAG         = 0x04;
+const static ConnectFlag WILL_QOS0_FLAG    = 0x00;
+const static ConnectFlag WILL_QOS1_FLAG    = 0x08;
+const static ConnectFlag WILL_QOS2_FLAG    = 0x10;
+const static ConnectFlag WILL_QOS3_FLAG    = 0x18;
+const static ConnectFlag WILL_RETAIN_FLAG  = 0x20;
+const static ConnectFlag PASSWORD_FLAG     = 0x40;
+const static ConnectFlag USERNAME_FLAG     = 0x80;
 
 enum ConnectReturnCode {
     CONNECT_ACCEPTED = 0,
@@ -109,6 +107,7 @@ class ConnectMessage : public FixedHeader {
     ConnectMessage(uint16_t keepAlive, std::string id, bool cleanSession, struct Will* will, struct User* user);
     ~ConnectMessage() {};
     int64_t GetWire(uint8_t* wire);
+    std::string FlagString();
 };
 
 

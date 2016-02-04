@@ -96,6 +96,35 @@ int64_t ConnectMessage::GetWire(uint8_t* wire) {
     return buf - wire;
 }
 
+std::string ConnectMessage::FlagString() {
+    std::string out("");
+    if ((Flags & CLEANSESSION_FLAG) == CLEANSESSION_FLAG) {
+        out += "\tCleanSession\n";
+    }
+    if ((Flags & WILL_FLAG) == WILL_FLAG) {
+        out += "\tWillFlag\n";
+    }
+    switch (Flags & WILL_QOS3_FLAG) {
+    case WILL_QOS0_FLAG:
+        out += "\tWill_QoS0\n";
+    case WILL_QOS1_FLAG:
+        out += "\tWill_QoS1\n";
+    case WILL_QOS2_FLAG:
+        out += "\tWill_QoS2\n";
+    case WILL_QOS3_FLAG:
+        out += "\tWill_QoS2\n";
+    }
+    if ((Flags & WILL_RETAIN_FLAG) == WILL_RETAIN_FLAG) {
+        out += "\tWillRetain\n";
+    }
+    if ((Flags & PASSWORD_FLAG) == PASSWORD_FLAG) {
+        out += "\tPassword\n";
+    }
+    if ((Flags & USERNAME_FLAG) == USERNAME_FLAG) {
+        out += "\tUsername\n";
+    }
+    return out;
+}
 
 ConnackMessage::ConnackMessage(bool sp, ConnectReturnCode code) : SessionPresent(sp), ReturnCode(code), FixedHeader(CONNACK_MESSAGE_TYPE, false, 0, false, 2, 0) {}
 
