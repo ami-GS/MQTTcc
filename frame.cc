@@ -1,4 +1,5 @@
 #include <stdint.h>
+#include <sstream>
 #include "frame.h"
 #include "util.h"
 
@@ -19,6 +20,11 @@ int64_t FixedHeader::GetWire(uint8_t* wire) {
     return buf - wire + len;
 }
 
+std::string FixedHeader::String() {
+    std::stringstream ss;
+    ss  << "[" << TypeString[Type] << "]\nDup=" << Dup << ", QoS=" << QoS << ", Retain=" << Retain << ", Remain Length=" << Length << "\n";
+    return ss.str();
+}
 
 
 ConnectMessage::ConnectMessage(uint16_t keepAlive, std::string id, bool cleanSession, struct Will* will, struct User* user) :
@@ -125,6 +131,13 @@ std::string ConnectMessage::FlagString() {
     }
     return out;
 }
+
+std::string ConnectMessage::String() {
+    std::stringstream ss;
+    ss << FixedHeader::String() << "Protocol=" << Protocol.name << ":" << Protocol.level << ", Flags=\n" << FlagString() << "\t, KeepAlive=" << KeepAlive << ", ClientID=" << ClientID << ", Will={" << Will->Topic << ":" << Will->Message << ", Retain=" << Will->Retain << ", QoS=" << Will->QoS << "}, UserInfo={" << User->Name << ":" << User->Passwd << "}";
+    return ss.str();
+}
+
 
 ConnackMessage::ConnackMessage(bool sp, ConnectReturnCode code) : SessionPresent(sp), ReturnCode(code), FixedHeader(CONNACK_MESSAGE_TYPE, false, 0, false, 2, 0) {}
 

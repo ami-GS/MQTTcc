@@ -109,6 +109,7 @@ class ConnectMessage : public FixedHeader {
     ~ConnectMessage() {};
     int64_t GetWire(uint8_t* wire);
     std::string FlagString();
+    std::string String();
 };
 
 
