@@ -162,8 +162,9 @@ struct SubscribeTopic {
 
 class SubscribeMessage : public FixedHeader {
     SubscribeTopic** subTopics;
+    int topicNum;
     
-    SubscribeMessage(uint16_t id, SubscribeTopic** topics, int topicNum);
+    SubscribeMessage(uint16_t id, SubscribeTopic** topics, int tN);
     ~SubscribeMessage() {};
     int64_t GetWire(uint8_t* wire);
 };
@@ -177,8 +178,9 @@ enum SubackCode {
 
 class SubackMessage : public FixedHeader {
     SubackCode* returnCodes;
-
-    SubackMessage(uint16_t id, SubackCode* codes, int codeNum);
+    int codeNum;
+    
+    SubackMessage(uint16_t id, SubackCode* codes, int cN);
     ~SubackMessage() {};
 
     int64_t GetWire(uint8_t* wire);
@@ -186,8 +188,9 @@ class SubackMessage : public FixedHeader {
 
 class UnsubscribeMessage : public FixedHeader {
     std::string* topics;
+    int topicNum;
 
-    UnsubscribeMessage(uint16_t id, std::string* topics, int topicNum);
+    UnsubscribeMessage(uint16_t id, std::string* topics, int tN);
     ~UnsubscribeMessage() {};
 
     int64_t GetWire(uint8_t* wire);

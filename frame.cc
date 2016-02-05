@@ -237,7 +237,7 @@ int64_t PubcompMessage::GetWire(uint8_t* wire) {
     return buf - wire;
 }
 
-SubscribeMessage::SubscribeMessage(uint16_t id, SubscribeTopic** topics, int topicNum) : subTopics(topics), FixedHeader(SUBSCRIBE_MESSAGE_TYPE, false, 1, false, 2+topicNum, id) {
+SubscribeMessage::SubscribeMessage(uint16_t id, SubscribeTopic** topics, int tN) : subTopics(topics), topicNum(tN), FixedHeader(SUBSCRIBE_MESSAGE_TYPE, false, 1, false, 2+tN, id) {
     for (int i = 0; i < topicNum; i++) {
         Length += topics[i]->topic.size();
     }
@@ -252,20 +252,19 @@ int64_t SubscribeMessage::GetWire(uint8_t* wire) {
     buf += len;
     *(buf++) = (uint8_t)(PacketID >> 8);
     *(buf++) = (uint8_t)PacketID;
-    int payload_len = 2;
-    for (int i = 0; payload_len < Length; i++) {
+    for (int i = 0; i < topicNum; i++) {
         len = UTF8_encode(buf, subTopics[i]->topic);
         if (len == -1) {
             return -1;
         }
         buf += len;
         *(buf++) = subTopics[i]->qos;
-        payload_len += len + 1;
     }
+
     return buf - wire;
 }
 
-SubackMessage::SubackMessage(uint16_t id, SubackCode* codes, int codeNum) : returnCodes(codes), FixedHeader(SUBACK_MESSAGE_TYPE, false, 0, false, 2+codeNum, id) {}
+SubackMessage::SubackMessage(uint16_t id, SubackCode* codes, int cN) : returnCodes(codes), codeNum(cN), FixedHeader(SUBACK_MESSAGE_TYPE, false, 0, false, 2+cN, id) {}
 
 
 int64_t SubackMessage::GetWire(uint8_t* wire) {
@@ -283,7 +282,7 @@ int64_t SubackMessage::GetWire(uint8_t* wire) {
     return buf - wire;
 }
 
-UnsubscribeMessage::UnsubscribeMessage(uint16_t id, std::string* topics, int topicNum) : topics(topics), FixedHeader(UNSUBSCRIBE_MESSAGE_TYPE, false, 1, false, 2 + 2*topicNum, id) {
+UnsubscribeMessage::UnsubscribeMessage(uint16_t id, std::string* topics, int tN) : topics(topics), topicNum(tN), FixedHeader(UNSUBSCRIBE_MESSAGE_TYPE, false, 1, false, 2 + 2*tN, id) {
     for (int i = 0; i < topicNum; i++) {
         Length += (*topics).size();
     }
