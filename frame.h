@@ -175,6 +175,8 @@ enum SubackCode {
     ACK_MAX_QOS2,
     FAILURE,
 };
+static const std::string SubackCodeString[4] = {"ACK_MAX_QOS0", "ACK_MAX_QOS1", "ACK_MAX_QOS2", "FAILURE"};
+
 
 class SubackMessage : public FixedHeader {
     SubackCode* returnCodes;
