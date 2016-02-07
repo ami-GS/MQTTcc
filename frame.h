@@ -66,6 +66,7 @@ enum ConnectReturnCode {
 };
 
 struct Will {
+    Will(std::string topic, std::string message, bool retain, uint8_t qos) : Topic(topic), Message(message), Retain(retain), QoS(qos) {};
     std::string Topic;
     std::string Message;
     bool Retain;
@@ -73,6 +74,7 @@ struct Will {
 };
 
 struct User {
+    User(std::string name, std::string pass) : Name(name), Passwd(pass) {};
     std::string Name;
     std::string Passwd;
 };
