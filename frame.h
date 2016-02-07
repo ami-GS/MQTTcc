@@ -108,10 +108,12 @@ class ConnectMessage : public FixedHeader {
     struct MQTT_VERSION Protocol;
 
     ConnectMessage(uint16_t keepAlive, std::string id, bool cleanSession, struct Will* will, struct User* user);
+    ConnectMessage() : FixedHeader(CONNECT_MESSAGE_TYPE, false, 0, false, 0, 0) {};
     ~ConnectMessage() {};
     int64_t GetWire(uint8_t* wire);
     std::string FlagString();
     std::string String();
+    static int64_t parse(uint8_t* wire, ConnectMessage* m);
 };
 
 
@@ -119,9 +121,11 @@ class ConnackMessage : public FixedHeader {
     bool SessionPresent;
     ConnectReturnCode ReturnCode;
     ConnackMessage(bool sp, ConnectReturnCode code);
+    ConnackMessage() : FixedHeader(CONNACK_MESSAGE_TYPE, false, 0, false, 2, 0) {};
     ~ConnackMessage() {};
     int64_t GetWire(uint8_t* wire);
     std::string String();
+    static int64_t parse(uint8_t* wire, ConnackMessage* m);
 };
 
 
@@ -129,9 +133,11 @@ class PublishMessage : public FixedHeader {
     std::string topicName;
     std::string payload;
     PublishMessage(bool dup, uint8_t qos, bool retain, uint16_t id, std::string topic, std::string payload);
+    PublishMessage() : FixedHeader(PUBLISH_MESSAGE_TYPE, false, 0, false, 0, 0) {};
     ~PublishMessage() {};
     int64_t GetWire(uint8_t* wire);
     std::string String();
+    static int64_t parse(uint8_t* wire, PublishMessage* m);
 };
 
 class PubackMessage : public FixedHeader {

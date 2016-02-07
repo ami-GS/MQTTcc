@@ -102,6 +102,67 @@ int64_t ConnectMessage::GetWire(uint8_t* wire) {
     return buf - wire;
 }
 
+int64_t ConnectMessage::parse(uint8_t* wire, ConnectMessage* m) {
+    uint8_t* buf = wire;
+    m->Dup = (*buf & 0x80) == 0x08;
+    m->QoS = (*buf >> 1) & 0x03;
+    m->Retain = (*buf & 0x01) == 0x01;
+
+    int buf_len;
+    int32_t remain = remainDecode(++buf, &buf_len);
+    // TODO: define error type? how?
+    if (m->Dup || m->QoS > 0 || m->Retain) {
+        return -1;
+    }
+    m->Length = remain;
+    buf += buf_len;
+
+    uint16_t len = 0;
+    std::string name = UTF8_decode(buf, &len);
+    buf += len;
+    uint8_t level = *(buf++);
+    if (name != MQTT_3_1_1.name || level != MQTT_3_1_1.level) {
+        return -1;
+    }
+    m->Protocol = MQTT_3_1_1;
+    m->Flags = (ConnectFlag)*(buf++);
+    if ((m->Flags & RESERVED_FLAG) == RESERVED_FLAG) {
+        return -1;
+    }
+    if ((m->Flags & USERNAME_FLAG) == USERNAME_FLAG && (m->Flags & PASSWORD_FLAG) == PASSWORD_FLAG) {
+        return -1;
+    }
+    m->KeepAlive |= ((uint16_t)*(buf++) << 8);
+    m->KeepAlive |= *(buf++);
+    m->ClientID = UTF8_decode(buf, &len);
+    buf += len;
+
+    if ((m->Flags & WILL_FLAG) == WILL_FLAG) {
+        std::string wTopic = UTF8_decode(buf, &len);
+        buf += len;
+        std::string wMessage = UTF8_decode(buf, &len);
+        buf += len;
+        bool wRetain = (m->Flags & WILL_RETAIN_FLAG) == WILL_RETAIN_FLAG;
+        uint8_t wQoS = (uint8_t)((m->Flags & WILL_QOS3_FLAG) >> 3);
+        m->Will = new struct Will(wTopic, wMessage, wRetain, wQoS);
+    }
+
+    if ((m->Flags & USERNAME_FLAG) == USERNAME_FLAG || (m->Flags & PASSWORD_FLAG) == PASSWORD_FLAG) {
+        std::string name(""), passwd("");
+        if ((m->Flags & USERNAME_FLAG) == USERNAME_FLAG) {
+            name = UTF8_decode(buf, &len);
+            buf += len;
+        }
+        if ((m->Flags & PASSWORD_FLAG) == PASSWORD_FLAG) {
+            passwd = UTF8_decode(buf, &len);
+            buf += len;
+        }
+        m->User = new struct User(name, passwd);
+    }
+
+    return buf - wire;
+}
+
 std::string ConnectMessage::FlagString() {
     std::string out("");
     if ((Flags & CLEANSESSION_FLAG) == CLEANSESSION_FLAG) {
@@ -162,6 +223,26 @@ std::string ConnackMessage::String() {
     return ss.str();
 }
 
+int64_t ConnackMessage::parse(uint8_t* wire, ConnackMessage* m) {
+    uint8_t* buf = wire;
+    m->Dup = (*buf & 0x80) == 0x08;
+    m->QoS = (*buf >> 1) & 0x03;
+    m->Retain = (*buf & 0x01) == 0x01;
+
+    int buf_len;
+    int32_t remain = remainDecode(++buf, &buf_len);
+    // TODO: define error type? how?
+    if (m->Dup || m->QoS > 0 || m->Retain || remain != 2) {
+        return -1;
+    }
+    m->Length = remain;
+    buf += buf_len;
+
+    m->SessionPresent = (*(buf++) == 1);
+    m->ReturnCode = (ConnectReturnCode)*(buf++);
+    return buf - wire;
+}
+
 PublishMessage::PublishMessage(bool dup, uint8_t qos, bool retain, uint16_t id, std::string topic, std::string payload) : topicName(topic), payload(payload), FixedHeader(PUBLISH_MESSAGE_TYPE, dup, qos, retain, topic.size()+payload.size()+2, id) {
     if (qos > 0) {
         Length += 2;
@@ -184,6 +265,37 @@ int64_t PublishMessage::GetWire(uint8_t* wire) {
     }
     memcpy(buf, payload.c_str(), payload.size());
     buf += payload.size();
+    return buf - wire;
+}
+
+int64_t PublishMessage::parse(uint8_t* wire, PublishMessage* m) {
+    uint8_t* buf = wire;
+    m->Dup = (*buf & 0x80) == 0x08;
+    m->QoS = (*buf >> 1) & 0x03;
+    m->Retain = (*buf & 0x01) == 0x01;
+
+    int buf_len;
+    int32_t remain = remainDecode(++buf, &buf_len);
+    // TODO: define error type? how?
+    m->Length = remain;
+    buf += buf_len;
+
+    uint16_t len = 0;
+    m->topicName = UTF8_decode(buf, &len);
+    buf += len;
+
+    if (m->topicName.find('#') == std::string::npos || m->topicName.find('+') == std::string::npos) {
+        return -1;
+    }
+
+
+    if (m->QoS > 0) {
+        m->PacketID = ((uint16_t)*(buf++) << 8);
+        m->PacketID |= *(buf++);
+    }
+    int payloadLen = buf - wire + buf_len + 1;
+    m->payload = std::string(buf, buf+payloadLen);
+
     return buf - wire;
 }
 
