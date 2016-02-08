@@ -20,6 +20,34 @@ int64_t FixedHeader::GetWire(uint8_t* wire) {
     return buf - wire + len;
 }
 
+int64_t FixedHeader::parseHeader(uint8_t* wire) {
+    uint8_t* buf = wire;
+    Type = (MessageType)(*buf >> 4);
+    Dup = (*buf & 0x80) == 0x08;
+    QoS = (*buf >> 1) & 0x03;
+    Retain = (*buf & 0x01) == 0x01;
+    // TODO: error type should be defined
+    if (Type == PUBREL_MESSAGE_TYPE || Type == SUBSCRIBE_MESSAGE_TYPE || Type == UNSUBSCRIBE_MESSAGE_TYPE) {
+        if (Dup || Retain || QoS != 1) {
+            return -1;
+        }
+    } else if (Type == PUBLISH_MESSAGE_TYPE) {
+        if (QoS == 3) {
+            return -1;
+        }
+    } else if (Dup || Retain || QoS != 0) {
+        return -1;
+    }
+
+    int len = 0;
+    Length = remainDecode(++buf, &len);
+    if (len == -1) {
+        return -1;
+    }
+
+    return buf - wire + len;
+}
+
 std::string FixedHeader::String() {
     std::stringstream ss;
     ss  << "[" << TypeString[Type] << "]\nDup=" << Dup << ", QoS=" << QoS << ", Retain=" << Retain << ", Remain Length=" << Length << "\n";
@@ -104,20 +132,12 @@ int64_t ConnectMessage::GetWire(uint8_t* wire) {
 
 int64_t ConnectMessage::parse(uint8_t* wire, ConnectMessage* m) {
     uint8_t* buf = wire;
-    m->Dup = (*buf & 0x80) == 0x08;
-    m->QoS = (*buf >> 1) & 0x03;
-    m->Retain = (*buf & 0x01) == 0x01;
-
-    int buf_len;
-    int32_t remain = remainDecode(++buf, &buf_len);
-    // TODO: define error type? how?
-    if (m->Dup || m->QoS > 0 || m->Retain) {
+    int64_t len = m->parseHeader(buf);
+    if (len == -1) {
         return -1;
     }
-    m->Length = remain;
-    buf += buf_len;
+    buf += len;
 
-    uint16_t len = 0;
     std::string name = UTF8_decode(buf, &len);
     buf += len;
     uint8_t level = *(buf++);
@@ -225,18 +245,11 @@ std::string ConnackMessage::String() {
 
 int64_t ConnackMessage::parse(uint8_t* wire, ConnackMessage* m) {
     uint8_t* buf = wire;
-    m->Dup = (*buf & 0x80) == 0x08;
-    m->QoS = (*buf >> 1) & 0x03;
-    m->Retain = (*buf & 0x01) == 0x01;
-
-    int buf_len;
-    int32_t remain = remainDecode(++buf, &buf_len);
-    // TODO: define error type? how?
-    if (m->Dup || m->QoS > 0 || m->Retain || remain != 2) {
+    int64_t len =  m->parseHeader(buf);
+    if (len == -1) {
         return -1;
     }
-    m->Length = remain;
-    buf += buf_len;
+    buf += len;
 
     m->SessionPresent = (*(buf++) == 1);
     m->ReturnCode = (ConnectReturnCode)*(buf++);
@@ -270,17 +283,13 @@ int64_t PublishMessage::GetWire(uint8_t* wire) {
 
 int64_t PublishMessage::parse(uint8_t* wire, PublishMessage* m) {
     uint8_t* buf = wire;
-    m->Dup = (*buf & 0x80) == 0x08;
-    m->QoS = (*buf >> 1) & 0x03;
-    m->Retain = (*buf & 0x01) == 0x01;
+    int64_t len = m->parseHeader(buf);
+    if (len == -1) {
+        return -1;
+    }
+    buf += len;
+    int64_t h_len = len;
 
-    int buf_len;
-    int32_t remain = remainDecode(++buf, &buf_len);
-    // TODO: define error type? how?
-    m->Length = remain;
-    buf += buf_len;
-
-    uint16_t len = 0;
     m->topicName = UTF8_decode(buf, &len);
     buf += len;
 
@@ -293,7 +302,7 @@ int64_t PublishMessage::parse(uint8_t* wire, PublishMessage* m) {
         m->PacketID = ((uint16_t)*(buf++) << 8);
         m->PacketID |= *(buf++);
     }
-    int payloadLen = buf - wire + buf_len + 1;
+    int payloadLen = m->Length - (buf - wire - h_len);
     m->payload = std::string(buf, buf+payloadLen);
 
     return buf - wire;
