@@ -145,34 +145,43 @@ class PublishMessage : public FixedHeader {
 
 class PubackMessage : public FixedHeader {
     PubackMessage(uint16_t id);
+    PubackMessage() : FixedHeader() {};
     ~PubackMessage() {};
     int64_t GetWire(uint8_t* wire);
     std::string String();
+    static int64_t parse(uint8_t* wire, PubackMessage* m);
 };
 
 
 class PubrecMessage : public FixedHeader {
     PubrecMessage(uint16_t id);
+    PubrecMessage() : FixedHeader() {};
     ~PubrecMessage() {};
     int64_t GetWire(uint8_t* wire);
     std::string String();
+    static int64_t parse(uint8_t* wire, PubrecMessage* m);
 };
 
 class PubrelMessage : public FixedHeader {
     PubrelMessage(uint16_t id);
+    PubrelMessage() : FixedHeader() {};
     ~PubrelMessage() {};
     int64_t GetWire(uint8_t* wire);
     std::string String();
+    static int64_t parse(uint8_t* wire, PubrelMessage* m);
 };
 
 class PubcompMessage : public FixedHeader {
     PubcompMessage(uint16_t id);
+    PubcompMessage();
     ~PubcompMessage() {};
     int64_t GetWire(uint8_t* wire);
     std::string String();
+    static int64_t parse(uint8_t* wire, PubcompMessage* m);
 };
 
 struct SubscribeTopic {
+    SubscribeTopic(std::string topic, uint8_t qos) : topic(topic), qos(qos) {};
     std::string topic;
     uint8_t qos;
 };
@@ -182,9 +191,11 @@ class SubscribeMessage : public FixedHeader {
     int topicNum;
     
     SubscribeMessage(uint16_t id, std::vector<SubscribeTopic*> topics, int tN);
+    SubscribeMessage() : FixedHeader() {};
     ~SubscribeMessage() {};
     int64_t GetWire(uint8_t* wire);
     std::string String();
+    static int64_t parse(uint8_t* wire, SubscribeMessage* m);
 };
 
 enum SubackCode {
@@ -201,10 +212,12 @@ class SubackMessage : public FixedHeader {
     int codeNum;
     
     SubackMessage(uint16_t id, std::vector<SubackCode> codes, int cN);
+    SubackMessage() : FixedHeader() {};
     ~SubackMessage() {};
 
     int64_t GetWire(uint8_t* wire);
     std::string String();
+    static int64_t parse(uint8_t* wire, SubackMessage* m);
 };
 
 class UnsubscribeMessage : public FixedHeader {
@@ -212,18 +225,22 @@ class UnsubscribeMessage : public FixedHeader {
     int topicNum;
 
     UnsubscribeMessage(uint16_t id, std::vector<std::string> topics, int tN);
+    UnsubscribeMessage() : FixedHeader() {};
     ~UnsubscribeMessage() {};
 
     int64_t GetWire(uint8_t* wire);
     std::string String();
+    static int64_t parse(uint8_t* wire, UnsubscribeMessage* m);
 };
 
 class UnsubackMessage : public FixedHeader {
     UnsubackMessage(uint16_t id);
+    UnsubackMessage() : FixedHeader() {};
     ~UnsubackMessage() {};
 
     int64_t GetWire(uint8_t* wire);
     std::string String();
+    static int64_t parse(uint8_t* wire, UnsubackMessage* m);
 };
 
 class PingreqMessage : public FixedHeader {
@@ -232,6 +249,7 @@ class PingreqMessage : public FixedHeader {
 
     int64_t GetWire(uint8_t* wire);
     std::string String();
+    static int64_t parse(uint8_t* wire, PingreqMessage* m);
 };
 
 class PingrespMessage : public FixedHeader {
@@ -240,6 +258,7 @@ class PingrespMessage : public FixedHeader {
 
     int64_t GetWire(uint8_t* wire);
     std::string String();
+    static int64_t parse(uint8_t* wire, PingrespMessage* m);
 };
 
 class DisconnectMessage : public FixedHeader {
@@ -248,6 +267,7 @@ class DisconnectMessage : public FixedHeader {
 
     int64_t GetWire(uint8_t* wire);
     std::string String();
+    static int64_t parse(uint8_t* wire, DisconnectMessage* m);
 };
 
 
