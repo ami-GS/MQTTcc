@@ -102,6 +102,7 @@ public:
 };
 
 class ConnectMessage : public FixedHeader {
+public:
     uint8_t Flags;
     uint16_t KeepAlive;
     std::string ClientID;
@@ -121,6 +122,7 @@ class ConnectMessage : public FixedHeader {
 
 
 class ConnackMessage : public FixedHeader {
+public:
     bool SessionPresent;
     ConnectReturnCode ReturnCode;
     ConnackMessage(bool sp, ConnectReturnCode code);
@@ -133,6 +135,7 @@ class ConnackMessage : public FixedHeader {
 
 
 class PublishMessage : public FixedHeader {
+public:
     std::string topicName;
     std::string payload;
     PublishMessage(bool dup, uint8_t qos, bool retain, uint16_t id, std::string topic, std::string payload);
@@ -144,6 +147,7 @@ class PublishMessage : public FixedHeader {
 };
 
 class PubackMessage : public FixedHeader {
+public:
     PubackMessage(uint16_t id);
     PubackMessage() : FixedHeader() {};
     ~PubackMessage() {};
@@ -154,6 +158,7 @@ class PubackMessage : public FixedHeader {
 
 
 class PubrecMessage : public FixedHeader {
+public:
     PubrecMessage(uint16_t id);
     PubrecMessage() : FixedHeader() {};
     ~PubrecMessage() {};
@@ -163,6 +168,7 @@ class PubrecMessage : public FixedHeader {
 };
 
 class PubrelMessage : public FixedHeader {
+public:
     PubrelMessage(uint16_t id);
     PubrelMessage() : FixedHeader() {};
     ~PubrelMessage() {};
@@ -172,6 +178,7 @@ class PubrelMessage : public FixedHeader {
 };
 
 class PubcompMessage : public FixedHeader {
+public:
     PubcompMessage(uint16_t id);
     PubcompMessage();
     ~PubcompMessage() {};
@@ -187,6 +194,7 @@ struct SubscribeTopic {
 };
 
 class SubscribeMessage : public FixedHeader {
+public:
     std::vector<SubscribeTopic*> subTopics;
     int topicNum;
     
@@ -208,6 +216,7 @@ static const std::string SubackCodeString[4] = {"ACK_MAX_QOS0", "ACK_MAX_QOS1", 
 
 
 class SubackMessage : public FixedHeader {
+public:
     std::vector<SubackCode> returnCodes;
     int codeNum;
     
@@ -221,6 +230,7 @@ class SubackMessage : public FixedHeader {
 };
 
 class UnsubscribeMessage : public FixedHeader {
+public:
     std::vector<std::string> topics;
     int topicNum;
 
@@ -234,6 +244,7 @@ class UnsubscribeMessage : public FixedHeader {
 };
 
 class UnsubackMessage : public FixedHeader {
+public:
     UnsubackMessage(uint16_t id);
     UnsubackMessage() : FixedHeader() {};
     ~UnsubackMessage() {};
@@ -244,6 +255,7 @@ class UnsubackMessage : public FixedHeader {
 };
 
 class PingreqMessage : public FixedHeader {
+public:
     PingreqMessage();
     ~PingreqMessage() {};
 
@@ -253,6 +265,7 @@ class PingreqMessage : public FixedHeader {
 };
 
 class PingrespMessage : public FixedHeader {
+public:
     PingrespMessage();
     ~PingrespMessage() {};
 
@@ -262,6 +275,7 @@ class PingrespMessage : public FixedHeader {
 };
 
 class DisconnectMessage : public FixedHeader {
+public:
     DisconnectMessage();
     ~DisconnectMessage() {};
 
