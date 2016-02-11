@@ -3,6 +3,53 @@
 #include "frame.h"
 #include "util.h"
 
+int64_t GetMessage(uint8_t* wire, FixedHeader* m) {
+    uint8_t* buf = wire;
+    int len = m->parseHeader(buf);
+    if (len == -1) {
+        return -1;
+    }
+    buf += len;
+
+    FixedHeader* fh;
+    // TODO: check whether 'constractorMap[type](m);' can be used or not
+    switch (m->Type) {
+    case CONNECT_MESSAGE_TYPE:
+        fh = new ConnectMessage(m);
+    case CONNACK_MESSAGE_TYPE:
+        fh = new ConnackMessage(m);
+    case PUBLISH_MESSAGE_TYPE:
+        fh = new PublishMessage(m);
+    case PUBACK_MESSAGE_TYPE:
+        fh = new PubackMessage(m);
+    case PUBREC_MESSAGE_TYPE:
+        fh = new PubrecMessage(m);
+    case PUBREL_MESSAGE_TYPE:
+        fh = new PubrelMessage(m);
+    case PUBCOMP_MESSAGE_TYPE:
+        fh = new PubcompMessage(m);
+    case SUBSCRIBE_MESSAGE_TYPE:
+        fh = new SubscribeMessage(m);
+    case SUBACK_MESSAGE_TYPE:
+        fh = new SubackMessage(m);
+    case UNSUBSCRIBE_MESSAGE_TYPE:
+        fh = new UnsubscribeMessage(m);
+    case UNSUBACK_MESSAGE_TYPE:
+        fh = new UnsubackMessage(m);
+    case PINGREQ_MESSAGE_TYPE:
+        fh = new PingreqMessage(m);
+    case PINGRESP_MESSAGE_TYPE:
+        fh = new PingrespMessage(m);
+    case DISCONNECT_MESSAGE_TYPE:
+        fh = new DisconnectMessage(m);
+    default:
+        return -1;
+    }
+    len = fh->parse(buf);
+    fh->String();
+    return len;
+}
+
 FixedHeader::FixedHeader(MessageType type, bool dup, uint8_t qos, bool retain, uint32_t length, uint16_t id) :
 Type(type), Dup(dup), QoS(qos), Retain(retain), Length(length), PacketID(id) {}
 

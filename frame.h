@@ -188,7 +188,7 @@ public:
 class PubcompMessage : public FixedHeader {
 public:
     PubcompMessage(uint16_t id);
-    PubcompMessage();
+    PubcompMessage(FixedHeader* fh) : FixedHeader(fh) {};
     ~PubcompMessage() {};
     int64_t GetWire(uint8_t* wire);
     std::string String();
