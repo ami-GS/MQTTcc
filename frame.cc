@@ -102,6 +102,14 @@ std::string FixedHeader::String() {
 }
 
 
+Message::Message(FixedHeader* fh) {
+    this->fh = fh;
+}
+
+Message::~Message() {
+    delete fh;
+}
+
 ConnectMessage::ConnectMessage(uint16_t keepAlive, std::string id, bool cleanSession, struct Will* will, struct User* user) :
     KeepAlive(keepAlive), ClientID(id), CleanSession(cleanSession), Will(will), User(user), Flags(0), Protocol(MQTT_3_1_1), Message(new FixedHeader(CONNECT_MESSAGE_TYPE, false, 0, false, 0, 0)) {
     uint32_t length = 6 + Protocol.name.size() + 2 + id.size();
@@ -126,6 +134,11 @@ ConnectMessage::ConnectMessage(uint16_t keepAlive, std::string id, bool cleanSes
         }
     } 
     fh->Length = length;
+}
+
+ConnectMessage::~ConnectMessage() {
+    delete Will;
+    delete User;
 }
 
 int64_t ConnectMessage::GetWire(uint8_t* wire) {
@@ -457,6 +470,12 @@ std::string PubcompMessage::String() {
 SubscribeMessage::SubscribeMessage(uint16_t id, std::vector<SubscribeTopic*> topics, int tN) : subTopics(topics), topicNum(tN), Message(new FixedHeader(SUBSCRIBE_MESSAGE_TYPE, false, 1, false, 2+tN, id)) {
     for (int i = 0; i < topicNum; i++) {
         fh->Length += topics[i]->topic.size();
+    }
+}
+
+SubscribeMessage::~SubscribeMessage() {
+    for (int i = 0; i < topicNum; i++) {
+        delete subTopics[i];
     }
 }
 

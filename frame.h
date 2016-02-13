@@ -104,11 +104,8 @@ public:
 class Message {
 public:
     FixedHeader* fh;
-    Message() {};
-    Message(FixedHeader* fh) {
-        this->fh = fh;
-    };
-    ~Message() {};
+    Message(FixedHeader* fh);
+    virtual ~Message();
     virtual int64_t GetWire(uint8_t* wire);
     virtual std::string String();
     virtual int64_t parse(uint8_t* wire);
@@ -126,7 +123,7 @@ public:
 
     ConnectMessage(uint16_t keepAlive, std::string id, bool cleanSession, struct Will* will, struct User* user);
     ConnectMessage(FixedHeader* fh) : Message(fh) {};
-    ~ConnectMessage() {};
+    ~ConnectMessage();
     int64_t GetWire(uint8_t* wire);
     std::string FlagString();
     std::string String();
@@ -213,7 +210,7 @@ public:
     
     SubscribeMessage(uint16_t id, std::vector<SubscribeTopic*> topics, int tN);
     SubscribeMessage(FixedHeader* fh) : Message(fh) {};
-    ~SubscribeMessage() {};
+    ~SubscribeMessage();
     int64_t GetWire(uint8_t* wire);
     std::string String();
     int64_t parse(uint8_t* wire);
