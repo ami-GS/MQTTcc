@@ -208,7 +208,7 @@ int64_t ConnectMessage::parse(uint8_t* wire) {
     if ((this->Flags & USERNAME_FLAG) == USERNAME_FLAG && (this->Flags & PASSWORD_FLAG) == PASSWORD_FLAG) {
         return -1;
     }
-    this->KeepAlive |= ((uint16_t)*(buf++) << 8);
+    this->KeepAlive = ((uint16_t)*(buf++) << 8);
     this->KeepAlive |= *(buf++);
     this->ClientID = UTF8_decode(buf, &len);
     buf += len;
@@ -557,7 +557,7 @@ int64_t SubackMessage::GetWire(uint8_t* wire) {
 int64_t SubackMessage::parse(uint8_t* wire) {
     uint8_t* buf = wire;
     fh->PacketID = ((uint16_t)*(buf++) << 8);
-    fh->PacketID = *(buf++);
+    fh->PacketID |= *(buf++);
     for (int i = 0; i < fh->Length-2; i++) {
         returnCodes.push_back((SubackCode)*(buf++));
         codeNum++;
@@ -609,7 +609,7 @@ int64_t UnsubscribeMessage::parse(uint8_t* wire) {
     uint8_t* buf = wire;
     int64_t len;
     fh->PacketID = ((uint16_t)*(buf++) << 8);
-    fh->PacketID = *(buf++);
+    fh->PacketID |= *(buf++);
     for (int i = 0; i < fh->Length-2; i++) {
         topics.push_back(UTF8_decode(buf, &len));
         topicNum++;
@@ -644,7 +644,7 @@ int64_t UnsubackMessage::GetWire(uint8_t* wire) {
 int64_t UnsubackMessage::parse(uint8_t* wire) {
     uint8_t* buf = wire;
     fh->PacketID = ((uint16_t)*(buf++) << 8);
-    fh->PacketID = *(buf++);
+    fh->PacketID |= *(buf++);
     return buf - wire;
 }
 
