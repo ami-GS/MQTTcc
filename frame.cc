@@ -13,38 +13,41 @@ int64_t GetMessage(uint8_t* wire, Message* m) {
     buf += len;
 
     // TODO: check whether 'constractorMap[type](fh);' can be used or not
+    Message* tmp;
     switch (fh->Type) {
     case CONNECT_MESSAGE_TYPE:
-        m = new ConnectMessage(fh);
+        tmp = new ConnectMessage(fh);
     case CONNACK_MESSAGE_TYPE:
-        m = new ConnackMessage(fh);
+        tmp = new ConnackMessage(fh);
     case PUBLISH_MESSAGE_TYPE:
-        m = new PublishMessage(fh);
+        tmp = new PublishMessage(fh);
     case PUBACK_MESSAGE_TYPE:
-        m = new PubackMessage(fh);
+        tmp = new PubackMessage(fh);
     case PUBREC_MESSAGE_TYPE:
-        m = new PubrecMessage(fh);
+        tmp = new PubrecMessage(fh);
     case PUBREL_MESSAGE_TYPE:
-        m = new PubrelMessage(fh);
+        tmp = new PubrelMessage(fh);
     case PUBCOMP_MESSAGE_TYPE:
-        m = new PubcompMessage(fh);
+        tmp = new PubcompMessage(fh);
     case SUBSCRIBE_MESSAGE_TYPE:
-        m = new SubscribeMessage(fh);
+        tmp = new SubscribeMessage(fh);
     case SUBACK_MESSAGE_TYPE:
-        m = new SubackMessage(fh);
+        tmp = new SubackMessage(fh);
     case UNSUBSCRIBE_MESSAGE_TYPE:
-        m = new UnsubscribeMessage(fh);
+        tmp = new UnsubscribeMessage(fh);
     case UNSUBACK_MESSAGE_TYPE:
-        m = new UnsubackMessage(fh);
+        tmp = new UnsubackMessage(fh);
     case PINGREQ_MESSAGE_TYPE:
-        m = new PingreqMessage(fh);
+        tmp = new PingreqMessage(fh);
     case PINGRESP_MESSAGE_TYPE:
-        m = new PingrespMessage(fh);
+        tmp = new PingrespMessage(fh);
     case DISCONNECT_MESSAGE_TYPE:
-        m = new DisconnectMessage(fh);
+        tmp = new DisconnectMessage(fh);
     default:
         return -1;
     }
+    delete m;
+    *m = *tmp;
     len = m->parse(buf);
     m->String();
     return len;
