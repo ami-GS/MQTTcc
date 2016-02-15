@@ -613,6 +613,7 @@ int64_t UnsubscribeMessage::parse(uint8_t* wire) {
     for (int i = 0; i < fh->Length-2; i++) {
         topics.push_back(UTF8_decode(buf, &len));
         topicNum++;
+        buf += len;
     }
     return buf - wire;
 }

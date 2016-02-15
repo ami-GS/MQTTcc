@@ -106,9 +106,9 @@ public:
     FixedHeader* fh;
     Message(FixedHeader* fh);
     virtual ~Message();
-    virtual int64_t GetWire(uint8_t* wire);
-    virtual std::string String();
-    virtual int64_t parse(uint8_t* wire);
+    virtual int64_t GetWire(uint8_t* wire) = 0;
+    virtual std::string String() = 0;
+    virtual int64_t parse(uint8_t* wire) = 0;
 };
 
 class ConnectMessage : public Message {
