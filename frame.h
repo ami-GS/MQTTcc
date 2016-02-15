@@ -98,7 +98,7 @@ public:
     ~FixedHeader() {};
     int64_t GetWire(uint8_t* wire);
     std::string String();
-    int64_t parseHeader(uint8_t* wire);
+    int64_t parseHeader(const uint8_t* wire);
 };
 
 class Message {
@@ -108,7 +108,7 @@ public:
     virtual ~Message();
     virtual int64_t GetWire(uint8_t* wire) = 0;
     virtual std::string String() = 0;
-    virtual int64_t parse(uint8_t* wire) = 0;
+    virtual int64_t parse(const uint8_t* wire) = 0;
 };
 
 class ConnectMessage : public Message {
@@ -127,7 +127,7 @@ public:
     int64_t GetWire(uint8_t* wire);
     std::string FlagString();
     std::string String();
-    int64_t parse(uint8_t* wire);
+    int64_t parse(const uint8_t* wire);
 };
 
 
@@ -140,7 +140,7 @@ public:
     ~ConnackMessage() {};
     int64_t GetWire(uint8_t* wire);
     std::string String();
-    int64_t parse(uint8_t* wire);
+    int64_t parse(const uint8_t* wire);
 };
 
 
@@ -153,7 +153,7 @@ public:
     ~PublishMessage() {};
     int64_t GetWire(uint8_t* wire);
     std::string String();
-    int64_t parse(uint8_t* wire);
+    int64_t parse(const uint8_t* wire);
 };
 
 class PubackMessage : public Message {
@@ -163,7 +163,7 @@ public:
     ~PubackMessage() {};
     int64_t GetWire(uint8_t* wire);
     std::string String();
-    int64_t parse(uint8_t* wire);
+    int64_t parse(const uint8_t* wire);
 };
 
 
@@ -174,7 +174,7 @@ public:
     ~PubrecMessage() {};
     int64_t GetWire(uint8_t* wire);
     std::string String();
-    int64_t parse(uint8_t* wire);
+    int64_t parse(const uint8_t* wire);
 };
 
 class PubrelMessage : public Message {
@@ -184,7 +184,7 @@ public:
     ~PubrelMessage() {};
     int64_t GetWire(uint8_t* wire);
     std::string String();
-    int64_t parse(uint8_t* wire);
+    int64_t parse(const uint8_t* wire);
 };
 
 class PubcompMessage : public Message {
@@ -194,7 +194,7 @@ public:
     ~PubcompMessage() {};
     int64_t GetWire(uint8_t* wire);
     std::string String();
-    int64_t parse(uint8_t* wire);
+    int64_t parse(const uint8_t* wire);
 };
 
 struct SubscribeTopic {
@@ -213,7 +213,7 @@ public:
     ~SubscribeMessage();
     int64_t GetWire(uint8_t* wire);
     std::string String();
-    int64_t parse(uint8_t* wire);
+    int64_t parse(const uint8_t* wire);
 };
 
 enum SubackCode {
@@ -236,7 +236,7 @@ public:
 
     int64_t GetWire(uint8_t* wire);
     std::string String();
-    int64_t parse(uint8_t* wire);
+    int64_t parse(const uint8_t* wire);
 };
 
 class UnsubscribeMessage : public Message {
@@ -250,7 +250,7 @@ public:
 
     int64_t GetWire(uint8_t* wire);
     std::string String();
-    int64_t parse(uint8_t* wire);
+    int64_t parse(const uint8_t* wire);
 };
 
 class UnsubackMessage : public Message {
@@ -261,7 +261,7 @@ public:
 
     int64_t GetWire(uint8_t* wire);
     std::string String();
-    int64_t parse(uint8_t* wire);
+    int64_t parse(const uint8_t* wire);
 };
 
 class PingreqMessage : public Message {
@@ -272,7 +272,7 @@ public:
 
     int64_t GetWire(uint8_t* wire);
     std::string String();
-    int64_t parse(uint8_t* wire);
+    int64_t parse(const uint8_t* wire);
 };
 
 class PingrespMessage : public Message {
@@ -283,7 +283,7 @@ public:
 
     int64_t GetWire(uint8_t* wire);
     std::string String();
-    int64_t parse(uint8_t* wire);
+    int64_t parse(const uint8_t* wire);
 };
 
 class DisconnectMessage : public Message {
@@ -294,7 +294,7 @@ public:
 
     int64_t GetWire(uint8_t* wire);
     std::string String();
-    int64_t parse(uint8_t* wire);
+    int64_t parse(const uint8_t* wire);
 };
 
 

@@ -70,8 +70,8 @@ int64_t FixedHeader::GetWire(uint8_t* wire) {
     return buf - wire + len;
 }
 
-int64_t FixedHeader::parseHeader(uint8_t* wire) {
-    uint8_t* buf = wire;
+int64_t FixedHeader::parseHeader(const uint8_t* wire) {
+    const uint8_t* buf = wire;
     Type = (MessageType)(*buf >> 4);
     Dup = (*buf & 0x80) == 0x08;
     QoS = (*buf >> 1) & 0x03;
@@ -193,8 +193,8 @@ int64_t ConnectMessage::GetWire(uint8_t* wire) {
     return buf - wire;
 }
 
-int64_t ConnectMessage::parse(uint8_t* wire) {
-    uint8_t* buf = wire;
+int64_t ConnectMessage::parse(const uint8_t* wire) {
+    const uint8_t* buf = wire;
     int64_t len = 0;
 
     std::string name = UTF8_decode(buf, &len);
@@ -302,8 +302,8 @@ std::string ConnackMessage::String() {
     return ss.str();
 }
 
-int64_t ConnackMessage::parse(uint8_t* wire) {
-    uint8_t* buf = wire;
+int64_t ConnackMessage::parse(const uint8_t* wire) {
+    const uint8_t* buf = wire;
     this->SessionPresent = (*(buf++) == 1);
     this->ReturnCode = (ConnectReturnCode)*(buf++);
     return buf - wire;
@@ -334,8 +334,8 @@ int64_t PublishMessage::GetWire(uint8_t* wire) {
     return buf - wire;
 }
 
-int64_t PublishMessage::parse(uint8_t* wire) {
-    uint8_t* buf = wire;
+int64_t PublishMessage::parse(const uint8_t* wire) {
+    const uint8_t* buf = wire;
     int64_t len = 0;
 
     topicName = UTF8_decode(buf, &len);
@@ -376,8 +376,8 @@ int64_t PubackMessage::GetWire(uint8_t* wire) {
     return buf - wire;
 }
 
-int64_t PubackMessage::parse(uint8_t* wire) {
-    uint8_t* buf = wire;
+int64_t PubackMessage::parse(const uint8_t* wire) {
+    const uint8_t* buf = wire;
     fh->PacketID = ((uint16_t)*(buf++) << 8);
     fh->PacketID |= *(buf++);
     return buf - wire;
@@ -403,8 +403,8 @@ int64_t PubrecMessage::GetWire(uint8_t* wire) {
     return buf - wire;
 }
 
-int64_t PubrecMessage::parse(uint8_t* wire) {
-    uint8_t* buf = wire;
+int64_t PubrecMessage::parse(const uint8_t* wire) {
+    const uint8_t* buf = wire;
     fh->PacketID = ((uint16_t)*(buf++) << 8);
     fh->PacketID |= *(buf++);
     return buf - wire;
@@ -430,8 +430,8 @@ int64_t PubrelMessage::GetWire(uint8_t* wire) {
     return buf - wire;
 }
 
-int64_t PubrelMessage::parse(uint8_t* wire) {
-    uint8_t* buf = wire;
+int64_t PubrelMessage::parse(const uint8_t* wire) {
+    const uint8_t* buf = wire;
     fh->PacketID = ((uint16_t)*(buf++) << 8);
     fh->PacketID |= *(buf++);
     return buf - wire;
@@ -457,8 +457,8 @@ int64_t PubcompMessage::GetWire(uint8_t* wire) {
     return buf - wire;
 }
 
-int64_t PubcompMessage::parse(uint8_t* wire) {
-    uint8_t* buf = wire;
+int64_t PubcompMessage::parse(const uint8_t* wire) {
+    const uint8_t* buf = wire;
     fh->PacketID = ((uint16_t)*(buf++) << 8);
     fh->PacketID |= *(buf++);
     return buf - wire;
@@ -503,8 +503,8 @@ int64_t SubscribeMessage::GetWire(uint8_t* wire) {
     return buf - wire;
 }
 
-int64_t SubscribeMessage::parse(uint8_t* wire) {
-    uint8_t* buf = wire;
+int64_t SubscribeMessage::parse(const uint8_t* wire) {
+    const uint8_t* buf = wire;
     int64_t len = 0;
     fh->PacketID = ((uint16_t)*(buf++) << 8);
     fh->PacketID |= *(buf++);
@@ -557,8 +557,8 @@ int64_t SubackMessage::GetWire(uint8_t* wire) {
     return buf - wire;
 }
 
-int64_t SubackMessage::parse(uint8_t* wire) {
-    uint8_t* buf = wire;
+int64_t SubackMessage::parse(const uint8_t* wire) {
+    const uint8_t* buf = wire;
     fh->PacketID = ((uint16_t)*(buf++) << 8);
     fh->PacketID |= *(buf++);
     for (int i = 0; i < fh->Length-2; i++) {
@@ -608,8 +608,8 @@ int64_t UnsubscribeMessage::GetWire(uint8_t* wire) {
     return buf - wire;
 }
 
-int64_t UnsubscribeMessage::parse(uint8_t* wire) {
-    uint8_t* buf = wire;
+int64_t UnsubscribeMessage::parse(const uint8_t* wire) {
+    const uint8_t* buf = wire;
     int64_t len;
     fh->PacketID = ((uint16_t)*(buf++) << 8);
     fh->PacketID |= *(buf++);
@@ -645,8 +645,8 @@ int64_t UnsubackMessage::GetWire(uint8_t* wire) {
     return buf - wire;
 }
 
-int64_t UnsubackMessage::parse(uint8_t* wire) {
-    uint8_t* buf = wire;
+int64_t UnsubackMessage::parse(const uint8_t* wire) {
+    const uint8_t* buf = wire;
     fh->PacketID = ((uint16_t)*(buf++) << 8);
     fh->PacketID |= *(buf++);
     return buf - wire;
@@ -670,7 +670,7 @@ int64_t PingreqMessage::GetWire(uint8_t* wire) {
     return buf - wire;
 }
 
-int64_t PingreqMessage::parse(uint8_t* wire) {
+int64_t PingreqMessage::parse(const uint8_t* wire) {
     return 0;
 }
 
@@ -693,7 +693,7 @@ int64_t PingrespMessage::GetWire(uint8_t* wire) {
     return buf - wire;
 }
 
-int64_t PingrespMessage::parse(uint8_t* wire) {
+int64_t PingrespMessage::parse(const uint8_t* wire) {
     return 0;
 }
 
@@ -721,6 +721,6 @@ std::string DisconnectMessage::String() {
     return ss.str();
 }
 
-int64_t DisconnectMessage::parse(uint8_t* wire) {
+int64_t DisconnectMessage::parse(const uint8_t* wire) {
     return 0;
 }

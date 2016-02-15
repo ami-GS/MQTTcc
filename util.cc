@@ -11,7 +11,7 @@ int32_t UTF8_encode(uint8_t* wire, std::string s) {
     return (int32_t)(2 + s.size());
 }
 
-std::string UTF8_decode(uint8_t* wire, int64_t* len) {
+std::string UTF8_decode(const uint8_t* wire, int64_t* len) {
     *len = (uint16_t)*wire << 8;
     *len |= *(wire+1);
     std::string s(*len, '0');
@@ -37,8 +37,8 @@ int32_t remainEncode(uint8_t* wire, uint32_t len) {
     return buf - wire;
 }
 
-int32_t remainDecode(uint8_t* wire, int* len) {
-    uint8_t* buf = wire;
+int32_t remainDecode(const uint8_t* wire, int* len) {
+    const uint8_t* buf = wire;
     uint32_t m = 1;
     uint32_t out = 0;
     for ( ; ; buf++) {
