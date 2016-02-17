@@ -111,6 +111,8 @@ public:
     virtual int64_t parse(const uint8_t* wire) = 0;
 };
 
+int64_t GetMessage(uint8_t* wire, Message* m);
+
 class ConnectMessage : public Message {
 public:
     uint8_t Flags;
