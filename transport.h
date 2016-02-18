@@ -11,7 +11,7 @@ class Transport {
     uint8_t writeBuff[65535];
 public:
     Transport(const std::string targetIP, int targetPort);
-    ~Transport();
+    ~Transport() {};
     int64_t sendMessage(Message* m);
     int64_t readMessage(Message* m);
 };
