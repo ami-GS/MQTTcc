@@ -85,3 +85,14 @@ std::vector<SubackCode> TopicNode::applySubscriber(std::string clientID, std::st
     }
     return resp;
 }
+
+int TopicNode::deleteSubscriber(std::string clientID, std::string topic) {
+    std::vector<TopicNode*> subNodes = getTopicNode(topic);
+    if (subNodes.size() == 0) {
+        return -1;
+    }
+    for (std::vector<TopicNode*>::iterator it = subNodes.begin(); it != subNodes.end(); it++) {
+        (*it)->subscribers.erase(clientID);
+    }
+    return 1;
+}

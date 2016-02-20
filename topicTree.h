@@ -19,6 +19,7 @@ public:
     ~TopicNode();
     std::vector<TopicNode*> getTopicNode(std::string topic);
     std::vector<SubackCode> applySubscriber(std::string clientID, std::string topic, uint8_t qos);
+    int deleteSubscriber(std::string clientID, std::string topic);
 
 };
 
