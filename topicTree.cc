@@ -99,3 +99,15 @@ int TopicNode::deleteSubscriber(std::string clientID, std::string topic) {
     }
     return 1;
 }
+
+int TopicNode::applyRetain(std::string topic, uint8_t qos, std::string retain) {
+    std::vector<TopicNode*> retainNodes = getTopicNode(topic, true);
+    if (retainNodes.size() == 0) {
+        return -1;
+    }
+    for (std::vector<TopicNode*>::iterator it = retainNodes.begin(); it != retainNodes.end(); it++) {
+        (*it)->retainMessage = retain;
+        (*it)->retainQoS = qos;
+    }
+    return 1;
+}
