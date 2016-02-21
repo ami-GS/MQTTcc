@@ -27,7 +27,7 @@ std::vector<TopicNode*> TopicNode::getNodesByNumberSign() {
     return resp;
 }
 
-std::vector<TopicNode*> TopicNode::getTopicNode(std::string topic) {
+std::vector<TopicNode*> TopicNode::getTopicNode(std::string topic, bool addNewNode) {
     std::vector<std::string> parts;
     size_t current = 0, found;
     std::string currentPath = "";
@@ -47,10 +47,10 @@ std::vector<TopicNode*> TopicNode::getTopicNode(std::string topic) {
         for (std::map<std::string, TopicNode*>::iterator itPair = nodes.begin(); itPair != nodes.end(); itPair++) {
             if (itPair->first[0] == '$') {
                 continue;
+                std::vector<TopicNode*> respN = getTopicNode(filledStr, addNewNode);
             }
             std::string filledStr = topic;
             filledStr.replace(topic.find_first_of("+"), 1, itPair->first);
-            std::vector<TopicNode*> respN = getTopicNode(filledStr);
             resp.insert(resp.end(), respN.begin(), respN.end());
         }
         
@@ -59,9 +59,10 @@ std::vector<TopicNode*> TopicNode::getTopicNode(std::string topic) {
             resp.insert(resp.end(), respN.begin(), respN.end());
         } else {
             currentPath += part;
-            if (nodes.find(part) == nodes.end()) {
-                //if there is no element
-                return resp;
+            if (bef->nodes.find(part) == bef->nodes.end() && addNewNode) {
+                bef->nodes[part] = new TopicNode(currentPath);
+            } else if (bef->nodes.find(part) == bef->nodes.end()) {
+                continue;
             }
             nxt = nodes[part];
             if (parts.size() - 1 == i) {
@@ -73,7 +74,7 @@ std::vector<TopicNode*> TopicNode::getTopicNode(std::string topic) {
 }
 
 std::vector<SubackCode> TopicNode::applySubscriber(std::string clientID, std::string topic, uint8_t qos) {
-    std::vector<TopicNode*> subNodes = getTopicNode(topic);
+    std::vector<TopicNode*> subNodes = getTopicNode(topic, true);
     std::vector<SubackCode> resp;
     if (subNodes.size() == 0) {
         return resp;
@@ -87,7 +88,7 @@ std::vector<SubackCode> TopicNode::applySubscriber(std::string clientID, std::st
 }
 
 int TopicNode::deleteSubscriber(std::string clientID, std::string topic) {
-    std::vector<TopicNode*> subNodes = getTopicNode(topic);
+    std::vector<TopicNode*> subNodes = getTopicNode(topic, false);
     if (subNodes.size() == 0) {
         return -1;
     }
