@@ -44,27 +44,29 @@ std::vector<TopicNode*> TopicNode::getTopicNode(std::string topic, bool addNewNo
         bef = nxt;
         part = parts[i];
         if (part == "+") {
-        for (std::map<std::string, TopicNode*>::iterator itPair = nodes.begin(); itPair != nodes.end(); itPair++) {
-            if (itPair->first[0] == '$') {
-                continue;
+            for (std::map<std::string, TopicNode*>::iterator itPair = bef->nodes.begin(); itPair != bef->nodes.end(); itPair++) {
+                if (itPair->first[0] == '$') {
+                    continue;
+                }
+                std::string filledStr = topic;
+                filledStr.replace(topic.find_first_of("+"), 1, itPair->first);
                 std::vector<TopicNode*> respN = getTopicNode(filledStr, addNewNode);
+                resp.insert(resp.end(), respN.begin(), respN.end());
             }
-            std::string filledStr = topic;
-            filledStr.replace(topic.find_first_of("+"), 1, itPair->first);
-            resp.insert(resp.end(), respN.begin(), respN.end());
-        }
-        
         } else if (part == "#") {
             std::vector<TopicNode*> respN = getNodesByNumberSign();
             resp.insert(resp.end(), respN.begin(), respN.end());
         } else {
             currentPath += part;
+            if (part.size()-1 != i) {
+                currentPath += "/";
+            }
             if (bef->nodes.find(part) == bef->nodes.end() && addNewNode) {
                 bef->nodes[part] = new TopicNode(currentPath);
             } else if (bef->nodes.find(part) == bef->nodes.end()) {
                 continue;
             }
-            nxt = nodes[part];
+            nxt = bef->nodes[part];
             if (parts.size() - 1 == i) {
                 resp.push_back(nxt);
             }
