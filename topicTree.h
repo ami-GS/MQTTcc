@@ -21,7 +21,7 @@ public:
     std::vector<SubackCode> applySubscriber(std::string clientID, std::string topic, uint8_t qos);
     int deleteSubscriber(std::string clientID, std::string topic);
     int applyRetain(std::string topic, uint8_t qos, std::string retain);
-
+    std::string dumpTree();
 };
 
 

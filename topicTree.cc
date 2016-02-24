@@ -111,3 +111,14 @@ int TopicNode::applyRetain(std::string topic, uint8_t qos, std::string retain) {
     }
     return 1;
 }
+
+std::string TopicNode::dumpTree() {
+    if (nodes.size() == 0) {
+        return fullPath + "\n";
+    }
+    std::string str = "";
+    for (std::map<std::string, TopicNode*>::iterator itPair = nodes.begin(); itPair != nodes.end(); itPair++) {
+        str += itPair->second->dumpTree();
+    }
+    return str;
+}
