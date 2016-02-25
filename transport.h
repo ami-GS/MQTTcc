@@ -7,8 +7,8 @@
 class Transport {
     int sock;
     struct sockaddr_in target;
-    uint8_t readBuff[65535];
-    uint8_t writeBuff[65535];
+    uint8_t readBuff[65536];
+    uint8_t writeBuff[65536];
 public:
     Transport(const std::string targetIP, int targetPort);
     ~Transport() {};

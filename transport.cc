@@ -7,6 +7,8 @@
 
 
 Transport::Transport(const std::string targetIP, int targetPort) {
+    memset(readBuff, 0, 65535);
+    memset(writeBuff, 0, 65535);
     sock = socket(AF_INET, SOCK_STREAM, 0);
     target.sin_family = AF_INET;
     target.sin_port = htons(targetPort);
