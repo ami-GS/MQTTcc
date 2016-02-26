@@ -27,7 +27,7 @@ std::vector<TopicNode*> TopicNode::getNodesByNumberSign() {
     return resp;
 }
 
-std::vector<TopicNode*> TopicNode::getTopicNode(std::string topic, bool addNewNode) {
+std::vector<TopicNode*> TopicNode::getTopicNode(const std::string topic, bool addNewNode) {
     std::vector<std::string> parts;
     size_t current = 0, found;
     std::string currentPath = "";
@@ -75,7 +75,7 @@ std::vector<TopicNode*> TopicNode::getTopicNode(std::string topic, bool addNewNo
     return resp;
 }
 
-std::vector<SubackCode> TopicNode::applySubscriber(std::string clientID, std::string topic, uint8_t qos) {
+std::vector<SubackCode> TopicNode::applySubscriber(const std::string clientID, const std::string topic, uint8_t qos) {
     std::vector<TopicNode*> subNodes = getTopicNode(topic, true);
     std::vector<SubackCode> resp;
     if (subNodes.size() == 0) {
@@ -89,7 +89,7 @@ std::vector<SubackCode> TopicNode::applySubscriber(std::string clientID, std::st
     return resp;
 }
 
-int TopicNode::deleteSubscriber(std::string clientID, std::string topic) {
+int TopicNode::deleteSubscriber(const std::string clientID, const std::string topic) {
     std::vector<TopicNode*> subNodes = getTopicNode(topic, false);
     if (subNodes.size() == 0) {
         return -1;
@@ -100,7 +100,7 @@ int TopicNode::deleteSubscriber(std::string clientID, std::string topic) {
     return 1;
 }
 
-int TopicNode::applyRetain(std::string topic, uint8_t qos, std::string retain) {
+int TopicNode::applyRetain(const std::string topic, uint8_t qos, const std::string retain) {
     std::vector<TopicNode*> retainNodes = getTopicNode(topic, true);
     if (retainNodes.size() == 0) {
         return -1;

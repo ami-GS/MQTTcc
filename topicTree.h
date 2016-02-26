@@ -17,10 +17,10 @@ public:
     uint8_t retainQoS;
     TopicNode(std::string topic);
     ~TopicNode();
-    std::vector<TopicNode*> getTopicNode(std::string topic, bool addNewNode);
-    std::vector<SubackCode> applySubscriber(std::string clientID, std::string topic, uint8_t qos);
-    int deleteSubscriber(std::string clientID, std::string topic);
-    int applyRetain(std::string topic, uint8_t qos, std::string retain);
+    std::vector<TopicNode*> getTopicNode(const std::string topic, bool addNewNode);
+    std::vector<SubackCode> applySubscriber(const std::string clientID, const std::string topic, uint8_t qos);
+    int deleteSubscriber(const std::string clientID, const std::string topic);
+    int applyRetain(const std::string topic, uint8_t qos, const std::string retain);
     std::string dumpTree();
 };
 
