@@ -31,3 +31,10 @@ int64_t Client::sendMessage(Message* m) {
     return len;
 }
     
+int Client::ackMessage(uint16_t pID) {
+    if (packetIDMap.find(pID) == packetIDMap.end()) {
+        return -1; // packet id does not exist
+    }
+    packetIDMap.erase(pID);
+    return 1;
+}

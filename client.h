@@ -21,6 +21,7 @@ public:
     Client(const std::string id, const User* user, uint16_t keepAlive, const Will* will);
     ~Client();
     int64_t sendMessage(Message* m);
+    int ackMessage(uint16_t pID);
 };
 
 
