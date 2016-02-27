@@ -2,6 +2,7 @@
 #define MQTT_TRANSPORT_H_
 
 #include <stdint.h>
+#include <netinet/in.h>
 #include "frame.h"
 
 class Transport {
