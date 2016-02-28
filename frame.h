@@ -119,11 +119,11 @@ public:
     uint16_t KeepAlive;
     std::string ClientID;
     bool CleanSession;
-    struct Will* Will;
-    struct User* User;
+    const Will* Will;
+    const User* User;
     struct MQTT_VERSION Protocol;
 
-    ConnectMessage(uint16_t keepAlive, std::string id, bool cleanSession, struct Will* will, struct User* user);
+    ConnectMessage(uint16_t keepAlive, std::string id, bool cleanSession, const struct Will* will, const struct User* user);
     ConnectMessage(FixedHeader* fh) : Message(fh) {};
     ~ConnectMessage();
     int64_t GetWire(uint8_t* wire);

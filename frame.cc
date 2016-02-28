@@ -113,7 +113,7 @@ Message::~Message() {
     delete fh;
 }
 
-ConnectMessage::ConnectMessage(uint16_t keepAlive, std::string id, bool cleanSession, struct Will* will, struct User* user) :
+ConnectMessage::ConnectMessage(uint16_t keepAlive, std::string id, bool cleanSession, const struct Will* will, const struct User* user) :
     KeepAlive(keepAlive), ClientID(id), CleanSession(cleanSession), Will(will), User(user), Flags(0), Protocol(MQTT_3_1_1), Message(new FixedHeader(CONNECT_MESSAGE_TYPE, false, 0, false, 0, 0)) {
     uint32_t length = 6 + Protocol.name.size() + 2 + id.size();
     if (cleanSession) {
