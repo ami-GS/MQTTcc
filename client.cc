@@ -38,3 +38,13 @@ int Client::ackMessage(uint16_t pID) {
     packetIDMap.erase(pID);
     return 1;
 }
+
+int Client::connect(const std::string addr, int port, bool cleanSession) {
+    if (ID.size() == 0 && !cleanSession) {
+        return -1; // clean session must be ture
+    }
+
+    ct = new Transport(addr, port);
+    ct->sendMessage(new ConnectMessage(keepAlive, ID, cleanSession, will, user));
+    return 1;
+}

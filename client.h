@@ -22,6 +22,7 @@ public:
     ~Client();
     int64_t sendMessage(Message* m);
     int ackMessage(uint16_t pID);
+    int connect(const std::string addr, int port, bool cleanSession);
 };
 
 
