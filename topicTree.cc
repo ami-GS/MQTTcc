@@ -3,6 +3,8 @@
 #include <map>
 #include <vector>
 
+TopicNode::TopicNode(std::string topic) : nodes(), fullPath(topic), retainMessage(""), retainQoS(0), subscribers() {}
+
 TopicNode::~TopicNode() {
     for (std::map<std::string, TopicNode*>::iterator itPair = nodes.begin(); itPair != nodes.end(); itPair++) {
         delete itPair->second;
