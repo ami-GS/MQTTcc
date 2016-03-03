@@ -30,7 +30,11 @@ int64_t Client::sendMessage(Message* m) {
     }
     return len;
 }
-    
+
+int32_t Client::getUsablePacketID() {
+  return 1; // TODO:apply random
+}
+
 int Client::ackMessage(uint16_t pID) {
     if (packetIDMap.find(pID) == packetIDMap.end()) {
         return -1; // packet id does not exist
@@ -47,4 +51,19 @@ int Client::connect(const std::string addr, int port, bool cleanSession) {
     ct = new Transport(addr, port);
     return ct->sendMessage(new ConnectMessage(keepAlive, ID, cleanSession, will, user));
 }
+
+int Client::publish(const std::string topic, const std::string data, uint8_t qos, bool retain) {
+  if (qos >= 3) {
+    return -1; // invalid qos 3
+  }
+  //if ()
+
+  int32_t id = 0;
+  if (qos > 0) {
+    id = getUsablePacketID();
+    if (id == -1) {
+      return -1;
+    }
+  }
+  return sendMessage(new PublishMessage(false, qos, retain, id, topic, data));
 }

@@ -21,8 +21,10 @@ public:
     Client(const std::string id, const User* user, uint16_t keepAlive, const Will* will);
     ~Client();
     int64_t sendMessage(Message* m);
+    int32_t getUsablePacketID();
     int ackMessage(uint16_t pID);
     int connect(const std::string addr, int port, bool cleanSession);
+    int publish(const std::string topic, const std::string data, uint8_t qos, bool retain);
 };
 
 
