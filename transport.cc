@@ -21,6 +21,7 @@ int64_t Transport::sendMessage(Message* m) {
         return -1;
     }
     write(sock, writeBuff, len);
+    delete m;
     return len;
 }
 
