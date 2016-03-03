@@ -45,6 +45,6 @@ int Client::connect(const std::string addr, int port, bool cleanSession) {
     }
 
     ct = new Transport(addr, port);
-    ct->sendMessage(new ConnectMessage(keepAlive, ID, cleanSession, will, user));
-    return 1;
+    return ct->sendMessage(new ConnectMessage(keepAlive, ID, cleanSession, will, user));
+}
 }
