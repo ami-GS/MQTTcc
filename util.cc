@@ -54,3 +54,15 @@ int32_t remainDecode(const uint8_t* wire, int* len) {
     *len = buf - wire;
     return out;
 }
+
+int split(std::string str, std::string sub, std::vector<std::string>* parts) {
+  if (sub.size() != 1) {
+    return -1; // the sub should be one charactor
+  }
+  size_t current = 0, found;
+  while((found = str.find_first_of(sub, current)) != std::string::npos){
+    parts->push_back(std::string(str, current, found - current));
+    current = found + 1;
+  }
+  return 1;
+}

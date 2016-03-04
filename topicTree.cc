@@ -1,5 +1,6 @@
 #include "topicTree.h"
 #include "frame.h"
+#include "util.h"
 #include <map>
 #include <vector>
 
@@ -30,15 +31,9 @@ std::vector<TopicNode*> TopicNode::getNodesByNumberSign() {
 }
 
 std::vector<TopicNode*> TopicNode::getTopicNode(const std::string topic, bool addNewNode) {
-    std::vector<std::string> parts;
-    size_t current = 0, found;
     std::string currentPath = "";
-    while((found = topic.find_first_of("/", current)) != std::string::npos){
-        parts.push_back(std::string(topic, current, found - current));
-        current = found + 1;
-    }
-    parts.push_back(std::string(topic, current, topic.size() - current));
-
+    std::vector<std::string> parts;
+    split(topic, "/", &parts);
     TopicNode *nxt = this, *bef;
     std::vector<TopicNode*> resp;
     std::string part;

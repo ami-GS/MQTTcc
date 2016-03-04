@@ -1,4 +1,5 @@
 #include "client.h"
+#include "util.h"
 
 Client::Client(const std::string id, const User* user, uint16_t keepAlive, const Will* will) : ID(id), user(user), keepAlive(keepAlive), will(will), isConnecting(false) {}
 
@@ -75,12 +76,8 @@ int64_t Client::subscribe(std::vector<SubscribeTopic*> topics) {
   }
   for (int i = 0; i < topics.size(); i++) {
     std::vector<std::string> parts;
-    size_t current = 0, found;
-    while((found = (topics[i]->topic).find_first_of("/", current)) != std::string::npos){
-      parts.push_back(std::string((topics[i]->topic), current, found - current));
-      current = found + 1;
-    }
-    parts.push_back(std::string(topics[i]->topic, current, topics[i]->topic.size() - current));
+    split(topics[i]->topic, "/", &parts);
+
     for (int j = 0; i < parts.size(); i++) {
       if (parts[j][0] == '#' && j != parts.size() - 1) {
 	return -1; // multi level wildcard must be on tail
