@@ -43,7 +43,7 @@ int Client::ackMessage(uint16_t pID) {
     return 1;
 }
 
-int Client::connect(const std::string addr, int port, bool cleanSession) {
+int64_t Client::connect(const std::string addr, int port, bool cleanSession) {
     if (ID.size() == 0 && !cleanSession) {
         return -1; // clean session must be ture
     }
@@ -52,7 +52,7 @@ int Client::connect(const std::string addr, int port, bool cleanSession) {
     return ct->sendMessage(new ConnectMessage(keepAlive, ID, cleanSession, will, user));
 }
 
-int Client::publish(const std::string topic, const std::string data, uint8_t qos, bool retain) {
+int64_t Client::publish(const std::string topic, const std::string data, uint8_t qos, bool retain) {
   if (qos >= 3) {
     return -1; // invalid qos 3
   }
