@@ -67,3 +67,26 @@ int64_t Client::publish(const std::string topic, const std::string data, uint8_t
   }
   return sendMessage(new PublishMessage(false, qos, retain, id, topic, data));
 }
+
+int64_t Client::subscribe(std::vector<SubscribeTopic*> topics) {
+  int32_t id = getUsablePacketID();
+  if (id == -1) {
+    return -1;
+  }
+  for (int i = 0; i < topics.size(); i++) {
+    std::vector<std::string> parts;
+    size_t current = 0, found;
+    while((found = (topics[i]->topic).find_first_of("/", current)) != std::string::npos){
+      parts.push_back(std::string((topics[i]->topic), current, found - current));
+      current = found + 1;
+    }
+    parts.push_back(std::string(topics[i]->topic, current, topics[i]->topic.size() - current));
+    for (int j = 0; i < parts.size(); i++) {
+      if (parts[j][0] == '#' && j != parts.size() - 1) {
+	return -1; // multi level wildcard must be on tail
+      } else if (false) {
+      } // has suffix of '#' and '+'
+    }
+  }
+  return sendMessage(new SubscribeMessage(id, topics, topics.size()));
+}

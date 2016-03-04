@@ -25,6 +25,7 @@ public:
     int ackMessage(uint16_t pID);
     int64_t connect(const std::string addr, int port, bool cleanSession);
     int64_t publish(const std::string topic, const std::string data, uint8_t qos, bool retain);
+    int64_t subscribe(std::vector<SubscribeTopic*> topics);
 };
 
 
