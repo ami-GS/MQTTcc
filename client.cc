@@ -87,3 +87,21 @@ int64_t Client::subscribe(std::vector<SubscribeTopic*> topics) {
   }
   return sendMessage(new SubscribeMessage(id, topics, topics.size()));
 }
+
+int64_t Client::unsubscribe(std::vector<std::string> topics) {
+  for (int i = 0; i < topics.size(); i++) {
+    std::vector<std::string> parts;
+    split(topics[i], "/", &parts);
+    for (int j = 0; j < parts.size(); j++) {
+      if (parts[j][0] == '#' && j != parts.size() - 1) {
+	return -1; // multi level wildcard must be on tail
+      } else if (false) {
+      } // has suffix of '#' and '+'
+    }
+  }
+  int32_t id = getUsablePacketID();
+  if (id == -1) {
+    return -1;
+  }
+  return sendMessage(new UnsubscribeMessage(id, topics, topics.size()));
+}

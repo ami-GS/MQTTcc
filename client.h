@@ -26,6 +26,7 @@ public:
     int64_t connect(const std::string addr, int port, bool cleanSession);
     int64_t publish(const std::string topic, const std::string data, uint8_t qos, bool retain);
     int64_t subscribe(std::vector<SubscribeTopic*> topics);
+    int64_t unsubscribe(std::vector<std::string> topics);
 };
 
 
