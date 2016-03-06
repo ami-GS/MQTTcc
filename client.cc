@@ -1,7 +1,13 @@
 #include "client.h"
 #include "util.h"
+#include <random>
+#include <chrono>
 
-Client::Client(const std::string id, const User* user, uint16_t keepAlive, const Will* will) : ID(id), user(user), keepAlive(keepAlive), will(will), isConnecting(false) {}
+Client::Client(const std::string id, const User* user, uint16_t keepAlive, const Will* will) : ID(id), user(user), keepAlive(keepAlive), will(will), isConnecting(false), randPacketID(1, 65535) {
+  std::random_device rnd;
+  unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+  mt(); // TODO: apply seed
+}
 
 Client::~Client() {
     delete user;
@@ -33,7 +39,16 @@ int64_t Client::sendMessage(Message* m) {
 }
 
 int32_t Client::getUsablePacketID() {
-  return 1; // TODO:apply random
+  bool exists = true;
+  uint16_t id = 0;
+  for (int trial = 0; exists; trial++) {
+    if (trial == 5) {
+      return -1; // fail to set packet id
+    }
+    id = randPacketID(mt);
+    exists = !(packetIDMap.find(id) == packetIDMap.end());
+  }
+  return id;
 }
 
 int Client::ackMessage(uint16_t pID) {
