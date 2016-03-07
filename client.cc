@@ -3,7 +3,7 @@
 #include <random>
 #include <chrono>
 
-Client::Client(const std::string id, const User* user, uint16_t keepAlive, const Will* will) : ID(id), user(user), keepAlive(keepAlive), will(will), isConnecting(false), randPacketID(1, 65535) {
+Client::Client(const std::string id, const User* user, uint16_t keepAlive, const Will* will) : ID(id), user(user), isConnecting(false), cleanSession(false), keepAlive(keepAlive), will(will), isConnecting(false), randPacketID(1, 65535) {
   std::random_device rnd;
   unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
   mt(); // TODO: apply seed
@@ -59,12 +59,13 @@ int Client::ackMessage(uint16_t pID) {
     return 1;
 }
 
-int64_t Client::connect(const std::string addr, int port, bool cleanSession) {
+int64_t Client::connect(const std::string addr, int port, bool cs) {
     if (ID.size() == 0 && !cleanSession) {
         return -1; // clean session must be ture
     }
 
     ct = new Transport(addr, port);
+    cleanSession = cs;
     return ct->sendMessage(new ConnectMessage(keepAlive, ID, cleanSession, will, user));
 }
 

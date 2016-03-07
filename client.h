@@ -12,6 +12,7 @@ class Client {
 private:
     Transport* ct;
     bool isConnecting;
+    bool cleanSession;
     std::string ID;
     const User* user;
     const Will* will;
