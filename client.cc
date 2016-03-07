@@ -121,3 +121,16 @@ int64_t Client::unsubscribe(std::vector<std::string> topics) {
   }
   return sendMessage(new UnsubscribeMessage(id, topics, topics.size()));
 }
+
+int Client::redelivery() {
+  int64_t len;
+  if (!cleanSession && packetIDMap.size() > 0) {
+    for (std::map<uint16_t, Message>::iterator itPair = packetIDMap.begin; itPair != packetIDMap.end(); itPair++) {
+      len = sendMessage(itPair->second);
+      if (len != -1) {
+	return -1;
+      }
+    }
+  }
+  return 1;
+}
