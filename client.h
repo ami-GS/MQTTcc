@@ -32,6 +32,7 @@ public:
     int64_t subscribe(std::vector<SubscribeTopic*> topics);
     int64_t unsubscribe(std::vector<std::string> topics);
     int redelivery();
+    void setPreviousSession(Client* ps);
 };
 
 

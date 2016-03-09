@@ -134,3 +134,11 @@ int Client::redelivery() {
   }
   return 1;
 }
+
+void Client::setPreviousSession(Client* ps) {
+  packetIDMap = ps->packetIDMap;
+  cleanSession = ps->cleanSession;
+  will = ps->will;
+  user = ps->user;
+  keepAlive = ps->keepAlive;
+}
