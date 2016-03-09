@@ -3,7 +3,7 @@
 #include <random>
 #include <chrono>
 
-Client::Client(const std::string id, const User* user, uint16_t keepAlive, const Will* will) : ID(id), user(user), isConnecting(false), cleanSession(false), keepAlive(keepAlive), will(will), isConnecting(false), randPacketID(1, 65535) {
+Client::Client(const std::string id, const User* user, uint16_t keepAlive, const Will* will) : ID(id), user(user), cleanSession(false), keepAlive(keepAlive), will(will), isConnecting(false), randPacketID(1, 65535) {
   std::random_device rnd;
   unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
   mt(); // TODO: apply seed
@@ -125,7 +125,7 @@ int64_t Client::unsubscribe(std::vector<std::string> topics) {
 int Client::redelivery() {
   int64_t len;
   if (!cleanSession && packetIDMap.size() > 0) {
-    for (std::map<uint16_t, Message>::iterator itPair = packetIDMap.begin; itPair != packetIDMap.end(); itPair++) {
+    for (std::map<uint16_t, Message*>::iterator itPair = packetIDMap.begin(); itPair != packetIDMap.end(); itPair++) {
       len = sendMessage(itPair->second);
       if (len != -1) {
 	return -1;
