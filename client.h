@@ -5,10 +5,11 @@
 #include <map>
 #include "frame.h"
 #include "transport.h"
+#include "terminal.h"
 #include "string"
 #include <random>
 
-class Client {
+class Client : Terminal {
 private:
     Transport* ct;
     bool isConnecting;
@@ -33,6 +34,20 @@ public:
     int64_t unsubscribe(std::vector<std::string> topics);
     int redelivery();
     void setPreviousSession(Client* ps);
+    int recvConnectMessage(ConnectMessage* m);
+    int recvConnackMessage(ConnackMessage* m);
+    int recvPublishMessage(PublishMessage* m);
+    int recvPubackMessage(PubackMessage* m);
+    int recvPubrecMessage(PubrecMessage* m);
+    int recvPubrelMessage(PubrelMessage* m);
+    int recvPubcompMessage(PubcompMessage* m);
+    int recvSubscribeMessage(SubscribeMessage* m);
+    int recvSubackMessage(SubackMessage* m);
+    int recvUnsubscribeMessage(UnsubscribeMessage* m);
+    int recvUnsubackMessage(UnsubackMessage* m);
+    int recvPingreqMessage(PingreqMessage* m);
+    int recvPingrespMessage(PingrespMessage* m);
+    int recvDisconnectMessage(DisconnectMessage* m);
 };
 
 

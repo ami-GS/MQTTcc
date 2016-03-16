@@ -142,3 +142,19 @@ void Client::setPreviousSession(Client* ps) {
   user = ps->user;
   keepAlive = ps->keepAlive;
 }
+
+int Client::recvConnectMessage(ConnectMessage* m) {return -1;}
+int Client::recvConnackMessage(ConnackMessage* m) {return 0;}
+int Client::recvPublishMessage(PublishMessage* m) {return 0;}
+int Client::recvPubackMessage(PubackMessage* m) {return 0;}
+int Client::recvPubrecMessage(PubrecMessage* m) {return 0;}
+int Client::recvPubrelMessage(PubrelMessage* m) {return 0;}
+int Client::recvPubcompMessage(PubcompMessage* m) {return 0;}
+int Client::recvSubscribeMessage(SubscribeMessage* m) {return -1;}
+int Client::recvSubackMessage(SubackMessage* m) {return 0;}
+int Client::recvUnsubscribeMessage(UnsubscribeMessage* m) {return -1;}
+int Client::recvUnsubackMessage(UnsubackMessage* m) {return 0;}
+int Client::recvPingreqMessage(PingreqMessage* m) {return -1;}
+int Client::recvPingrespMessage(PingrespMessage* m) {return 0;}
+int Client::recvDisconnectMessage(DisconnectMessage* m) {return -1;}
+
