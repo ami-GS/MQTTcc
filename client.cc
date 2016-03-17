@@ -144,17 +144,92 @@ void Client::setPreviousSession(Client* ps) {
 }
 
 int Client::recvConnectMessage(ConnectMessage* m) {return -1;}
-int Client::recvConnackMessage(ConnackMessage* m) {return 0;}
-int Client::recvPublishMessage(PublishMessage* m) {return 0;}
-int Client::recvPubackMessage(PubackMessage* m) {return 0;}
-int Client::recvPubrecMessage(PubrecMessage* m) {return 0;}
-int Client::recvPubrelMessage(PubrelMessage* m) {return 0;}
-int Client::recvPubcompMessage(PubcompMessage* m) {return 0;}
+
+int Client::recvConnackMessage(ConnackMessage* m) {
+    if (m->ReturnCode != CONNECT_ACCEPTED) {
+        return m->ReturnCode;
+    }
+
+    isConnecting = true;
+    if (keepAlive != 0) {
+        // start ping loop
+    }
+
+    return redelivery();
+}
+
+
+int Client::recvPublishMessage(PublishMessage* m) {
+    if (m->fh->Dup) {
+        // re-delivered;
+    } else {
+        // first time delivery
+    }
+
+    if (m->fh->Retain) {
+        // retained Message
+    }
+
+    switch (m->fh->QoS) {
+    case 0:
+        if (m->fh->PacketID != 0) {
+            return -1; // packet id should be zero
+        }
+    case 1:
+        return sendMessage(new PubackMessage(m->fh->PacketID));
+    case 2:
+        return sendMessage(new PubrecMessage(m->fh->PacketID));
+    }
+    return 1;
+}
+
+
+int Client::recvPubackMessage(PubackMessage* m) {
+    if (m->fh->PacketID > 0) {
+        return ackMessage(m->fh->PacketID);
+    }
+    return 1;
+}
+
+int Client::recvPubrecMessage(PubrecMessage* m) {
+    int err = ackMessage(m->fh->PacketID);
+    if (err < 0) {
+        return err;
+    }
+    err = sendMessage(new PubrelMessage(m->fh->PacketID));
+    return err;
+}
+int Client::recvPubrelMessage(PubrelMessage* m) {
+    int err = ackMessage(m->fh->PacketID);
+    if (err < 0) {
+        return err;
+    }
+    err = sendMessage(new PubcompMessage(m->fh->PacketID));
+    return err;
+}
+
+int Client::recvPubcompMessage(PubcompMessage* m) {
+    return ackMessage(m->fh->PacketID);
+}
+
 int Client::recvSubscribeMessage(SubscribeMessage* m) {return -1;}
-int Client::recvSubackMessage(SubackMessage* m) {return 0;}
+
+int Client::recvSubackMessage(SubackMessage* m) {
+    return ackMessage(m->fh->PacketID);
+}
+
 int Client::recvUnsubscribeMessage(UnsubscribeMessage* m) {return -1;}
-int Client::recvUnsubackMessage(UnsubackMessage* m) {return 0;}
+
+int Client::recvUnsubackMessage(UnsubackMessage* m) {
+    return ackMessage(m->fh->PacketID);
+}
+
 int Client::recvPingreqMessage(PingreqMessage* m) {return -1;}
-int Client::recvPingrespMessage(PingrespMessage* m) {return 0;}
+
+int Client::recvPingrespMessage(PingrespMessage* m) {
+    // TODO: implement duration base connection management
+    return 1;
+}
+
 int Client::recvDisconnectMessage(DisconnectMessage* m) {return -1;}
 
