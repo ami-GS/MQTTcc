@@ -25,14 +25,14 @@ int64_t Transport::sendMessage(Message* m) {
     return len;
 }
 
-int64_t Transport::readMessage(Message* m) {
+int64_t Transport::readMessage(Message* m, MQTT_ERROR& err) {
     memset(readBuff, 0, sizeof(readBuff));
     int64_t status = read(sock, readBuff, sizeof(readBuff));
 
     if (status > 0) {
         /* Data read from the socket */
-        int64_t len = GetMessage(readBuff, m);
-        if (len == -1) {
+        int64_t len = GetMessage(readBuff, m, err);
+        if (err != NO_ERROR) {
             return -1;
         }
     } else if (status == -1) {

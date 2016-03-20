@@ -1,4 +1,5 @@
 #include "util.h"
+#include "mqttError.h"
 #include <string>
 #include <stdint.h>
 
@@ -37,7 +38,7 @@ int32_t remainEncode(uint8_t* wire, uint32_t len) {
     return buf - wire;
 }
 
-int32_t remainDecode(const uint8_t* wire, int* len) {
+int32_t remainDecode(const uint8_t* wire, int* len, MQTT_ERROR& err) {
     const uint8_t* buf = wire;
     uint32_t m = 1;
     uint32_t out = 0;
@@ -48,6 +49,7 @@ int32_t remainDecode(const uint8_t* wire, int* len) {
             break;
         }
         if (m > 2097152) {
+            err = MALFORMED_REMAIN_LENGTH;
             return -1;
         }
     }

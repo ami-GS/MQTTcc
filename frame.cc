@@ -2,12 +2,13 @@
 #include <sstream>
 #include "frame.h"
 #include "util.h"
+#include "mqttError.h"
 
-int64_t GetMessage(uint8_t* wire, Message* m) {
+int64_t GetMessage(uint8_t* wire, Message* m, MQTT_ERROR& err) {
     uint8_t* buf = wire;
     FixedHeader* fh = new FixedHeader();
-    int len = fh->parseHeader(buf);
-    if (len == -1) {
+    int len = fh->parseHeader(buf, err);
+    if (err != -1) {
         return -1;
     }
     buf += len;
@@ -44,11 +45,15 @@ int64_t GetMessage(uint8_t* wire, Message* m) {
     case DISCONNECT_MESSAGE_TYPE:
         tmp = new DisconnectMessage(fh);
     default:
+        err = INVALID_MESSAGE_TYPE;
         return -1;
     }
     delete m;
     *m = *tmp;
-    len = m->parse(buf);
+    len = m->parse(buf, err);
+    if (err != -1) {
+        return -1;
+    }
     m->String();
     return len;
 }
@@ -70,7 +75,7 @@ int64_t FixedHeader::GetWire(uint8_t* wire) {
     return buf - wire + len;
 }
 
-int64_t FixedHeader::parseHeader(const uint8_t* wire) {
+int64_t FixedHeader::parseHeader(const uint8_t* wire, MQTT_ERROR& err) {
     const uint8_t* buf = wire;
     Type = (MessageType)(*buf >> 4);
     Dup = (*buf & 0x80) == 0x08;
@@ -79,19 +84,22 @@ int64_t FixedHeader::parseHeader(const uint8_t* wire) {
     // TODO: error type should be defined
     if (Type == PUBREL_MESSAGE_TYPE || Type == SUBSCRIBE_MESSAGE_TYPE || Type == UNSUBSCRIBE_MESSAGE_TYPE) {
         if (Dup || Retain || QoS != 1) {
+            err = MALFORMED_FIXED_HEADER_RESERVED_BIT;
             return -1;
         }
     } else if (Type == PUBLISH_MESSAGE_TYPE) {
         if (QoS == 3) {
+            err = INVALID_QOS_3;
             return -1;
         }
     } else if (Dup || Retain || QoS != 0) {
+        err = MALFORMED_FIXED_HEADER_RESERVED_BIT;
         return -1;
     }
 
     int len = 0;
-    Length = remainDecode(++buf, &len);
-    if (len == -1) {
+    Length = remainDecode(++buf, &len, err);
+    if (err != NO_ERROR) {
         return -1;
     }
 
@@ -193,7 +201,7 @@ int64_t ConnectMessage::GetWire(uint8_t* wire) {
     return buf - wire;
 }
 
-int64_t ConnectMessage::parse(const uint8_t* wire) {
+int64_t ConnectMessage::parse(const uint8_t* wire, MQTT_ERROR& err) {
     const uint8_t* buf = wire;
     int64_t len = 0;
 
@@ -206,9 +214,11 @@ int64_t ConnectMessage::parse(const uint8_t* wire) {
     this->Protocol = MQTT_3_1_1;
     this->Flags = (ConnectFlag)*(buf++);
     if ((this->Flags & RESERVED_FLAG) == RESERVED_FLAG) {
+        err = MALFORMED_CONNECT_FLAG_BIT;
         return -1;
     }
     if ((this->Flags & USERNAME_FLAG) == USERNAME_FLAG && (this->Flags & PASSWORD_FLAG) == PASSWORD_FLAG) {
+        err = USERNAME_DOES_NOT_EXIST_WITH_PASSWORD;
         return -1;
     }
     this->KeepAlive = ((uint16_t)*(buf++) << 8);
@@ -302,7 +312,7 @@ std::string ConnackMessage::String() {
     return ss.str();
 }
 
-int64_t ConnackMessage::parse(const uint8_t* wire) {
+int64_t ConnackMessage::parse(const uint8_t* wire, MQTT_ERROR& err) {
     const uint8_t* buf = wire;
     this->SessionPresent = (*(buf++) == 1);
     this->ReturnCode = (ConnectReturnCode)*(buf++);
@@ -334,7 +344,7 @@ int64_t PublishMessage::GetWire(uint8_t* wire) {
     return buf - wire;
 }
 
-int64_t PublishMessage::parse(const uint8_t* wire) {
+int64_t PublishMessage::parse(const uint8_t* wire, MQTT_ERROR& err) {
     const uint8_t* buf = wire;
     int64_t len = 0;
 
@@ -342,6 +352,7 @@ int64_t PublishMessage::parse(const uint8_t* wire) {
     buf += len;
 
     if (topicName.find('#') == std::string::npos || topicName.find('+') == std::string::npos) {
+        err = WILDCARD_CHARACTERS_IN_PUBLISH;
         return -1;
     }
 
@@ -376,7 +387,7 @@ int64_t PubackMessage::GetWire(uint8_t* wire) {
     return buf - wire;
 }
 
-int64_t PubackMessage::parse(const uint8_t* wire) {
+int64_t PubackMessage::parse(const uint8_t* wire, MQTT_ERROR& err) {
     const uint8_t* buf = wire;
     fh->PacketID = ((uint16_t)*(buf++) << 8);
     fh->PacketID |= *(buf++);
@@ -403,7 +414,7 @@ int64_t PubrecMessage::GetWire(uint8_t* wire) {
     return buf - wire;
 }
 
-int64_t PubrecMessage::parse(const uint8_t* wire) {
+int64_t PubrecMessage::parse(const uint8_t* wire, MQTT_ERROR& err) {
     const uint8_t* buf = wire;
     fh->PacketID = ((uint16_t)*(buf++) << 8);
     fh->PacketID |= *(buf++);
@@ -430,7 +441,7 @@ int64_t PubrelMessage::GetWire(uint8_t* wire) {
     return buf - wire;
 }
 
-int64_t PubrelMessage::parse(const uint8_t* wire) {
+int64_t PubrelMessage::parse(const uint8_t* wire, MQTT_ERROR& err) {
     const uint8_t* buf = wire;
     fh->PacketID = ((uint16_t)*(buf++) << 8);
     fh->PacketID |= *(buf++);
@@ -457,7 +468,7 @@ int64_t PubcompMessage::GetWire(uint8_t* wire) {
     return buf - wire;
 }
 
-int64_t PubcompMessage::parse(const uint8_t* wire) {
+int64_t PubcompMessage::parse(const uint8_t* wire, MQTT_ERROR& err) {
     const uint8_t* buf = wire;
     fh->PacketID = ((uint16_t)*(buf++) << 8);
     fh->PacketID |= *(buf++);
@@ -503,7 +514,7 @@ int64_t SubscribeMessage::GetWire(uint8_t* wire) {
     return buf - wire;
 }
 
-int64_t SubscribeMessage::parse(const uint8_t* wire) {
+int64_t SubscribeMessage::parse(const uint8_t* wire, MQTT_ERROR& err) {
     const uint8_t* buf = wire;
     int64_t len = 0;
     fh->PacketID = ((uint16_t)*(buf++) << 8);
@@ -511,14 +522,13 @@ int64_t SubscribeMessage::parse(const uint8_t* wire) {
 
     for (int i = 0; i < fh->Length-2;) {
         std::string topic = UTF8_decode(buf, &len);
-        if (len == -1) {
-            return -1;
-        }
         buf += len;
         if (*buf == 3) {
-            return -1; // QoS == 3
+            err = INVALID_QOS_3;
+            return -1;
         } else if (*buf > 3) {
-            return -1; // malformed reserved part
+            err = MALFORMED_SUBSCRIBE_RESERVED_PART;
+            return -1;
         }
         uint8_t qos = *(buf++) & 0x03;
         subTopics.push_back(new SubscribeTopic(topic, qos));
@@ -557,7 +567,7 @@ int64_t SubackMessage::GetWire(uint8_t* wire) {
     return buf - wire;
 }
 
-int64_t SubackMessage::parse(const uint8_t* wire) {
+int64_t SubackMessage::parse(const uint8_t* wire, MQTT_ERROR& err) {
     const uint8_t* buf = wire;
     fh->PacketID = ((uint16_t)*(buf++) << 8);
     fh->PacketID |= *(buf++);
@@ -608,7 +618,7 @@ int64_t UnsubscribeMessage::GetWire(uint8_t* wire) {
     return buf - wire;
 }
 
-int64_t UnsubscribeMessage::parse(const uint8_t* wire) {
+int64_t UnsubscribeMessage::parse(const uint8_t* wire, MQTT_ERROR& err) {
     const uint8_t* buf = wire;
     int64_t len;
     fh->PacketID = ((uint16_t)*(buf++) << 8);
@@ -645,7 +655,7 @@ int64_t UnsubackMessage::GetWire(uint8_t* wire) {
     return buf - wire;
 }
 
-int64_t UnsubackMessage::parse(const uint8_t* wire) {
+int64_t UnsubackMessage::parse(const uint8_t* wire, MQTT_ERROR& err) {
     const uint8_t* buf = wire;
     fh->PacketID = ((uint16_t)*(buf++) << 8);
     fh->PacketID |= *(buf++);
@@ -670,7 +680,7 @@ int64_t PingreqMessage::GetWire(uint8_t* wire) {
     return buf - wire;
 }
 
-int64_t PingreqMessage::parse(const uint8_t* wire) {
+int64_t PingreqMessage::parse(const uint8_t* wire, MQTT_ERROR& err) {
     return 0;
 }
 
@@ -693,7 +703,7 @@ int64_t PingrespMessage::GetWire(uint8_t* wire) {
     return buf - wire;
 }
 
-int64_t PingrespMessage::parse(const uint8_t* wire) {
+int64_t PingrespMessage::parse(const uint8_t* wire, MQTT_ERROR& err) {
     return 0;
 }
 
@@ -721,6 +731,6 @@ std::string DisconnectMessage::String() {
     return ss.str();
 }
 
-int64_t DisconnectMessage::parse(const uint8_t* wire) {
+int64_t DisconnectMessage::parse(const uint8_t* wire, MQTT_ERROR& err) {
     return 0;
 }

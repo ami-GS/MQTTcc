@@ -1,6 +1,7 @@
 #ifndef MQTT_FRAME_H_
 #define MQTT_FRAME_H_
 
+#include "mqttError.h"
 #include <stdint.h>
 #include <string>
 #include <vector>
@@ -98,7 +99,7 @@ public:
     ~FixedHeader() {};
     int64_t GetWire(uint8_t* wire);
     std::string String();
-    int64_t parseHeader(const uint8_t* wire);
+    int64_t parseHeader(const uint8_t* wire, MQTT_ERROR& err);
 };
 
 class Message {
@@ -108,10 +109,10 @@ public:
     virtual ~Message();
     virtual int64_t GetWire(uint8_t* wire) = 0;
     virtual std::string String() = 0;
-    virtual int64_t parse(const uint8_t* wire) = 0;
+    virtual int64_t parse(const uint8_t* wire, MQTT_ERROR& err) = 0;
 };
 
-int64_t GetMessage(uint8_t* wire, Message* m);
+int64_t GetMessage(uint8_t* wire, Message* m, MQTT_ERROR& err);
 
 class ConnectMessage : public Message {
 public:
@@ -129,7 +130,7 @@ public:
     int64_t GetWire(uint8_t* wire);
     std::string FlagString();
     std::string String();
-    int64_t parse(const uint8_t* wire);
+    int64_t parse(const uint8_t* wire, MQTT_ERROR& err);
 };
 
 
@@ -142,7 +143,7 @@ public:
     ~ConnackMessage() {};
     int64_t GetWire(uint8_t* wire);
     std::string String();
-    int64_t parse(const uint8_t* wire);
+    int64_t parse(const uint8_t* wire, MQTT_ERROR& err);
 };
 
 
@@ -155,7 +156,7 @@ public:
     ~PublishMessage() {};
     int64_t GetWire(uint8_t* wire);
     std::string String();
-    int64_t parse(const uint8_t* wire);
+    int64_t parse(const uint8_t* wire, MQTT_ERROR& err);
 };
 
 class PubackMessage : public Message {
@@ -165,7 +166,7 @@ public:
     ~PubackMessage() {};
     int64_t GetWire(uint8_t* wire);
     std::string String();
-    int64_t parse(const uint8_t* wire);
+    int64_t parse(const uint8_t* wire, MQTT_ERROR& err);
 };
 
 
@@ -176,7 +177,7 @@ public:
     ~PubrecMessage() {};
     int64_t GetWire(uint8_t* wire);
     std::string String();
-    int64_t parse(const uint8_t* wire);
+    int64_t parse(const uint8_t* wire, MQTT_ERROR& err);
 };
 
 class PubrelMessage : public Message {
@@ -186,7 +187,7 @@ public:
     ~PubrelMessage() {};
     int64_t GetWire(uint8_t* wire);
     std::string String();
-    int64_t parse(const uint8_t* wire);
+    int64_t parse(const uint8_t* wire, MQTT_ERROR& err);
 };
 
 class PubcompMessage : public Message {
@@ -196,7 +197,7 @@ public:
     ~PubcompMessage() {};
     int64_t GetWire(uint8_t* wire);
     std::string String();
-    int64_t parse(const uint8_t* wire);
+    int64_t parse(const uint8_t* wire, MQTT_ERROR& err);
 };
 
 struct SubscribeTopic {
@@ -215,7 +216,7 @@ public:
     ~SubscribeMessage();
     int64_t GetWire(uint8_t* wire);
     std::string String();
-    int64_t parse(const uint8_t* wire);
+    int64_t parse(const uint8_t* wire, MQTT_ERROR& err);
 };
 
 enum SubackCode {
@@ -238,7 +239,7 @@ public:
 
     int64_t GetWire(uint8_t* wire);
     std::string String();
-    int64_t parse(const uint8_t* wire);
+    int64_t parse(const uint8_t* wire, MQTT_ERROR& err);
 };
 
 class UnsubscribeMessage : public Message {
@@ -252,7 +253,7 @@ public:
 
     int64_t GetWire(uint8_t* wire);
     std::string String();
-    int64_t parse(const uint8_t* wire);
+    int64_t parse(const uint8_t* wire, MQTT_ERROR& err);
 };
 
 class UnsubackMessage : public Message {
@@ -263,7 +264,7 @@ public:
 
     int64_t GetWire(uint8_t* wire);
     std::string String();
-    int64_t parse(const uint8_t* wire);
+    int64_t parse(const uint8_t* wire, MQTT_ERROR& err);
 };
 
 class PingreqMessage : public Message {
@@ -274,7 +275,7 @@ public:
 
     int64_t GetWire(uint8_t* wire);
     std::string String();
-    int64_t parse(const uint8_t* wire);
+    int64_t parse(const uint8_t* wire, MQTT_ERROR& err);
 };
 
 class PingrespMessage : public Message {
@@ -285,7 +286,7 @@ public:
 
     int64_t GetWire(uint8_t* wire);
     std::string String();
-    int64_t parse(const uint8_t* wire);
+    int64_t parse(const uint8_t* wire, MQTT_ERROR& err);
 };
 
 class DisconnectMessage : public Message {
@@ -296,7 +297,7 @@ public:
 
     int64_t GetWire(uint8_t* wire);
     std::string String();
-    int64_t parse(const uint8_t* wire);
+    int64_t parse(const uint8_t* wire, MQTT_ERROR& err);
 };
 
 

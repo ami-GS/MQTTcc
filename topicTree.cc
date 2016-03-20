@@ -30,7 +30,7 @@ std::vector<TopicNode*> TopicNode::getNodesByNumberSign() {
     return resp;
 }
 
-std::vector<TopicNode*> TopicNode::getTopicNode(const std::string topic, bool addNewNode) {
+std::vector<TopicNode*> TopicNode::getTopicNode(const std::string topic, bool addNewNode, MQTT_ERROR& err) {
     std::string currentPath = "";
     std::vector<std::string> parts;
     split(topic, "/", &parts);
@@ -47,13 +47,23 @@ std::vector<TopicNode*> TopicNode::getTopicNode(const std::string topic, bool ad
                 }
                 std::string filledStr = topic;
                 filledStr.replace(topic.find_first_of("+"), 1, itPair->first);
-                std::vector<TopicNode*> respN = getTopicNode(filledStr, addNewNode);
+                std::vector<TopicNode*> respN = getTopicNode(filledStr, addNewNode, err);
+                if (err != NO_ERROR) {
+                    return resp;
+                }
                 resp.insert(resp.end(), respN.begin(), respN.end());
             }
         } else if (part == "#") {
+            if (i != parts.size() - 1) {
+                err = MULTI_LEVEL_WILDCARD_MUST_BE_ON_TAIL;
+                return resp;
+            }
             std::vector<TopicNode*> respN = getNodesByNumberSign();
             resp.insert(resp.end(), respN.begin(), respN.end());
         } else {
+            //if (/*has suffix of # or +*/) {
+            //    err = WILDCARD_MUST_NOT_BE_ADJACENT_TO_NAME;
+            //}
             currentPath += part;
             if (part.size()-1 != i) {
                 currentPath += "/";
@@ -72,10 +82,10 @@ std::vector<TopicNode*> TopicNode::getTopicNode(const std::string topic, bool ad
     return resp;
 }
 
-std::vector<SubackCode> TopicNode::applySubscriber(const std::string clientID, const std::string topic, uint8_t qos) {
-    std::vector<TopicNode*> subNodes = getTopicNode(topic, true);
+std::vector<SubackCode> TopicNode::applySubscriber(const std::string clientID, const std::string topic, uint8_t qos, MQTT_ERROR& err) {
     std::vector<SubackCode> resp;
-    if (subNodes.size() == 0) {
+    std::vector<TopicNode*> subNodes = getTopicNode(topic, true, err);
+    if (err != NO_ERROR) {
         return resp;
     }
     for (std::vector<TopicNode*>::iterator it = subNodes.begin(); it != subNodes.end(); it++) {
@@ -86,9 +96,9 @@ std::vector<SubackCode> TopicNode::applySubscriber(const std::string clientID, c
     return resp;
 }
 
-int TopicNode::deleteSubscriber(const std::string clientID, const std::string topic) {
-    std::vector<TopicNode*> subNodes = getTopicNode(topic, false);
-    if (subNodes.size() == 0) {
+int TopicNode::deleteSubscriber(const std::string clientID, const std::string topic, MQTT_ERROR& err) {
+    std::vector<TopicNode*> subNodes = getTopicNode(topic, false, err);
+    if (err != NO_ERROR) {
         return -1;
     }
     for (std::vector<TopicNode*>::iterator it = subNodes.begin(); it != subNodes.end(); it++) {
@@ -97,9 +107,9 @@ int TopicNode::deleteSubscriber(const std::string clientID, const std::string to
     return 1;
 }
 
-int TopicNode::applyRetain(const std::string topic, uint8_t qos, const std::string retain) {
-    std::vector<TopicNode*> retainNodes = getTopicNode(topic, true);
-    if (retainNodes.size() == 0) {
+int TopicNode::applyRetain(const std::string topic, uint8_t qos, const std::string retain, MQTT_ERROR& err) {
+    std::vector<TopicNode*> retainNodes = getTopicNode(topic, true, err);
+    if (err != NO_ERROR) {
         return -1;
     }
     for (std::vector<TopicNode*>::iterator it = retainNodes.begin(); it != retainNodes.end(); it++) {

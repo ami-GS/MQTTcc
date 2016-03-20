@@ -2,6 +2,7 @@
 #define MQTT_TOPICTREE_H_
 
 #include "frame.h"
+#include "mqttError.h"
 #include <map>
 #include <vector>
 #include <string>
@@ -17,10 +18,10 @@ public:
     uint8_t retainQoS;
     TopicNode(std::string topic);
     ~TopicNode();
-    std::vector<TopicNode*> getTopicNode(const std::string topic, bool addNewNode);
-    std::vector<SubackCode> applySubscriber(const std::string clientID, const std::string topic, uint8_t qos);
-    int deleteSubscriber(const std::string clientID, const std::string topic);
-    int applyRetain(const std::string topic, uint8_t qos, const std::string retain);
+    std::vector<TopicNode*> getTopicNode(const std::string topic, bool addNewNode, MQTT_ERROR& err);
+    std::vector<SubackCode> applySubscriber(const std::string clientID, const std::string topic, uint8_t qos, MQTT_ERROR& err);
+    int deleteSubscriber(const std::string clientID, const std::string topic, MQTT_ERROR& err);
+    int applyRetain(const std::string topic, uint8_t qos, const std::string retain, MQTT_ERROR& err);
     std::string dumpTree();
 };
 
