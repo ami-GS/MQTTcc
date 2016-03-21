@@ -66,5 +66,6 @@ int split(std::string str, std::string sub, std::vector<std::string>* parts) {
     parts->push_back(std::string(str, current, found - current));
     current = found + 1;
   }
+  parts->push_back(std::string(str, current, found - current));
   return 1;
 }
