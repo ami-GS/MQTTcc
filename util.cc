@@ -53,7 +53,7 @@ int32_t remainDecode(const uint8_t* wire, int* len, MQTT_ERROR& err) {
             return -1;
         }
     }
-    *len = buf - wire;
+    *len = buf - wire + 1;
     return out;
 }
 

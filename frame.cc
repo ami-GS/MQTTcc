@@ -78,7 +78,7 @@ int64_t FixedHeader::GetWire(uint8_t* wire) {
 int64_t FixedHeader::parseHeader(const uint8_t* wire, MQTT_ERROR& err) {
     const uint8_t* buf = wire;
     Type = (MessageType)(*buf >> 4);
-    Dup = (*buf & 0x80) == 0x08;
+    Dup = (*buf & 0x08) == 0x08;
     QoS = (*buf >> 1) & 0x03;
     Retain = (*buf & 0x01) == 0x01;
     // TODO: error type should be defined
