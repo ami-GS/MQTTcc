@@ -45,6 +45,24 @@ TEST(UtilTest, NormalTest) {
         EXPECT_TRUE(e_parts[i] == a_parts[i]);
     }
 }
+
+TEST(FrameTest, NormalTest) {
+    MessageType type = CONNECT_MESSAGE_TYPE;
+    bool dup = false;
+    uint8_t qos = 0;
+    bool retain = false;
+    uint32_t len = 0;
+    uint16_t id = 0;
+
+    FixedHeader* fh = new FixedHeader(type, dup, qos, retain, len, id);
+    EXPECT_EQ(type, fh->Type);
+    EXPECT_EQ(dup, fh->Dup);
+    EXPECT_EQ(qos, fh->QoS);
+    EXPECT_EQ(retain, fh->Retain);
+    EXPECT_EQ(len, fh->Length);
+    EXPECT_EQ(id, fh->PacketID);
+
+}
     
 
 int main(int argc, char **argv) {
