@@ -48,7 +48,7 @@ TEST(UtilTest, NormalTest) {
     }
 }
 
-TEST(FrameTest, NormalTest) {
+TEST(FrameHeaderTest, NormalTest) {
     MessageType type = PUBLISH_MESSAGE_TYPE;
     bool dup = true;
     uint8_t qos = 2;
