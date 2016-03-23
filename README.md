@@ -4,3 +4,4 @@ This MQTT implementation is following that of my Golang one.
 
 #### TODO
 * write test (most important)
+* apply multi-thread
