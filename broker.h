@@ -8,20 +8,20 @@ class Broker : Terminal {
 public:
     Broker();
     ~Broker();
-    int recvConnectMessage(ConnectMessage* m);
-    int recvConnackMessage(ConnackMessage* m);
-    int recvPublishMessage(PublishMessage* m);
-    int recvPubackMessage(PubackMessage* m);
-    int recvPubrecMessage(PubrecMessage* m);
-    int recvPubrelMessage(PubrelMessage* m);
-    int recvPubcompMessage(PubcompMessage* m);
-    int recvSubscribeMessage(SubscribeMessage* m);
-    int recvSubackMessage(SubackMessage* m);
-    int recvUnsubscribeMessage(UnsubscribeMessage* m);
-    int recvUnsubackMessage(UnsubackMessage* m);
-    int recvPingreqMessage(PingreqMessage* m);
-    int recvPingrespMessage(PingrespMessage* m);
-    int recvDisconnectMessage(DisconnectMessage* m);
+    MQTT_ERROR recvConnectMessage(ConnectMessage* m);
+    MQTT_ERROR recvConnackMessage(ConnackMessage* m);
+    MQTT_ERROR recvPublishMessage(PublishMessage* m);
+    MQTT_ERROR recvPubackMessage(PubackMessage* m);
+    MQTT_ERROR recvPubrecMessage(PubrecMessage* m);
+    MQTT_ERROR recvPubrelMessage(PubrelMessage* m);
+    MQTT_ERROR recvPubcompMessage(PubcompMessage* m);
+    MQTT_ERROR recvSubscribeMessage(SubscribeMessage* m);
+    MQTT_ERROR recvSubackMessage(SubackMessage* m);
+    MQTT_ERROR recvUnsubscribeMessage(UnsubscribeMessage* m);
+    MQTT_ERROR recvUnsubackMessage(UnsubackMessage* m);
+    MQTT_ERROR recvPingreqMessage(PingreqMessage* m);
+    MQTT_ERROR recvPingrespMessage(PingrespMessage* m);
+    MQTT_ERROR recvDisconnectMessage(DisconnectMessage* m);
 };
 
 #endif //MQTT_BROKER_H_
