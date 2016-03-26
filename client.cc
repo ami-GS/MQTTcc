@@ -14,13 +14,13 @@ Client::~Client() {
     delete will;
 }
 
-int64_t Client::sendMessage(Message* m) {
+MQTT_ERROR Client::sendMessage(Message* m) {
     if (!isConnecting) {
-        return -1; // not connecting
+        return NOT_CONNECTED;
     }
     uint16_t packetID = m->fh->PacketID;
     if (packetIDMap.find(packetID) != packetIDMap.end()) {
-        return -1; // packet ID has already used
+        return PACKET_ID_IS_USED_ALREADY;
     }
     int64_t len = ct->sendMessage(m);
     if (len != -1) {
@@ -30,109 +30,114 @@ int64_t Client::sendMessage(Message* m) {
             }
         } else if (m->fh->Type == PUBREC_MESSAGE_TYPE || m->fh->Type == SUBSCRIBE_MESSAGE_TYPE || m->fh->Type == UNSUBSCRIBE_MESSAGE_TYPE || m->fh->Type == PUBREL_MESSAGE_TYPE) {
             if (packetID == 0) {
-                return -1; // packet id should not be zero
+                return PACKET_ID_SHOULD_NOT_BE_ZERO;
             }
             packetIDMap[packetID] = m;
         }
     }
-    return len;
+    return NO_ERROR;
 }
 
-int32_t Client::getUsablePacketID() {
-  bool exists = true;
-  uint16_t id = 0;
-  for (int trial = 0; exists; trial++) {
-    if (trial == 5) {
-      return -1; // fail to set packet id
+MQTT_ERROR Client::getUsablePacketID(uint16_t* id) {
+    bool exists = true;
+    for (int trial = 0; exists; trial++) {
+        if (trial == 5) {
+            *id = -1;
+            return FAIL_TO_SET_PACKET_ID;
+        }
+        *id = randPacketID(mt);
+        exists = !(packetIDMap.find(*id) == packetIDMap.end());
     }
-    id = randPacketID(mt);
-    exists = !(packetIDMap.find(id) == packetIDMap.end());
-  }
-  return id;
+    return NO_ERROR;
 }
 
-int Client::ackMessage(uint16_t pID) {
+MQTT_ERROR Client::ackMessage(uint16_t pID) {
     if (packetIDMap.find(pID) == packetIDMap.end()) {
-        return -1; // packet id does not exist
+        return PACKET_ID_DOES_NOT_EXIST; // packet id does not exist
     }
     packetIDMap.erase(pID);
-    return 1;
+    return NO_ERROR;
 }
 
-int64_t Client::connect(const std::string addr, int port, bool cs) {
+MQTT_ERROR Client::connect(const std::string addr, int port, bool cs) {
     if (ID.size() == 0 && !cleanSession) {
-        return -1; // clean session must be ture
+        return CLEANSESSION_MUST_BE_TRUE;
     }
 
     ct = new Transport(addr, port);
     cleanSession = cs;
-    return ct->sendMessage(new ConnectMessage(keepAlive, ID, cleanSession, will, user));
+    int64_t len = ct->sendMessage(new ConnectMessage(keepAlive, ID, cleanSession, will, user));
+    if (len == -1) {
+        //return ; // TODO: transport error?
+    }
+    return NO_ERROR;
 }
 
-int64_t Client::publish(const std::string topic, const std::string data, uint8_t qos, bool retain) {
-  if (qos >= 3) {
-    return -1; // invalid qos 3
-  }
-  //if ()
-
-  int32_t id = 0;
-  if (qos > 0) {
-    id = getUsablePacketID();
-    if (id == -1) {
-      return -1;
+MQTT_ERROR Client::publish(const std::string topic, const std::string data, uint8_t qos, bool retain) {
+    if (qos >= 3) {
+        return INVALID_QOS_3;
     }
-  }
-  return sendMessage(new PublishMessage(false, qos, retain, id, topic, data));
+    //if ()
+
+    uint16_t id = 0;
+    if (qos > 0) {
+        MQTT_ERROR err = getUsablePacketID(&id);
+        if (err != NO_ERROR) {
+            return err;
+        }
+    }
+    return sendMessage(new PublishMessage(false, qos, retain, id, topic, data));
 }
 
-int64_t Client::subscribe(std::vector<SubscribeTopic*> topics) {
-  int32_t id = getUsablePacketID();
-  if (id == -1) {
-    return -1;
-  }
-  for (int i = 0; i < topics.size(); i++) {
-    std::vector<std::string> parts;
-    split(topics[i]->topic, "/", &parts);
-
-    for (int j = 0; i < parts.size(); i++) {
-      if (parts[j][0] == '#' && j != parts.size() - 1) {
-	return -1; // multi level wildcard must be on tail
-      } else if (false) {
-      } // has suffix of '#' and '+'
+MQTT_ERROR Client::subscribe(std::vector<SubscribeTopic*> topics) {
+    uint16_t id = 0;
+    MQTT_ERROR err = getUsablePacketID(&id);
+    if (err != NO_ERROR) {
+        return err;
     }
-  }
-  return sendMessage(new SubscribeMessage(id, topics, topics.size()));
+    for (int i = 0; i < topics.size(); i++) {
+        std::vector<std::string> parts;
+        split(topics[i]->topic, "/", &parts);
+        for (int j = 0; i < parts.size(); i++) {
+            if (parts[j][0] == '#' && j != parts.size() - 1) {
+                return MULTI_LEVEL_WILDCARD_MUST_BE_ON_TAIL;
+            } else if (false) {
+            } // has suffix of '#' and '+'
+        }
+    }
+    return sendMessage(new SubscribeMessage(id, topics, topics.size()));
 }
 
-int64_t Client::unsubscribe(std::vector<std::string> topics) {
-  for (int i = 0; i < topics.size(); i++) {
-    std::vector<std::string> parts;
-    split(topics[i], "/", &parts);
-    for (int j = 0; j < parts.size(); j++) {
-      if (parts[j][0] == '#' && j != parts.size() - 1) {
-	return -1; // multi level wildcard must be on tail
-      } else if (false) {
-      } // has suffix of '#' and '+'
+MQTT_ERROR Client::unsubscribe(std::vector<std::string> topics) {
+    for (int i = 0; i < topics.size(); i++) {
+        std::vector<std::string> parts;
+        split(topics[i], "/", &parts);
+        for (int j = 0; j < parts.size(); j++) {
+            if (parts[j][0] == '#' && j != parts.size() - 1) {
+                return MULTI_LEVEL_WILDCARD_MUST_BE_ON_TAIL;
+            } else if (false) {
+            } // has suffix of '#' and '+'
+        }
     }
-  }
-  int32_t id = getUsablePacketID();
-  if (id == -1) {
-    return -1;
-  }
-  return sendMessage(new UnsubscribeMessage(id, topics, topics.size()));
+    uint16_t id = 0;
+    MQTT_ERROR err = getUsablePacketID(&id);
+    if (err != NO_ERROR) {
+        return err;
+    }
+    return sendMessage(new UnsubscribeMessage(id, topics, topics.size()));
 }
 
-int Client::redelivery() {
-  int64_t len;
-  if (!cleanSession && packetIDMap.size() > 0) {
-    for (std::map<uint16_t, Message*>::iterator itPair = packetIDMap.begin(); itPair != packetIDMap.end(); itPair++) {
-      len = sendMessage(itPair->second);
-      if (len != -1) {
-	return -1;
-      }
+MQTT_ERROR Client::redelivery() {
+    MQTT_ERROR err;
+    if (!cleanSession && packetIDMap.size() > 0) {
+        for (std::map<uint16_t, Message*>::iterator itPair = packetIDMap.begin(); itPair != packetIDMap.end(); itPair++) {
+            err = sendMessage(itPair->second);
+            if (err != NO_ERROR) {
+                return err;
+            }
+        }
     }
-  }
-  return 1;
+    return NO_ERROR;
 }
 
 void Client::setPreviousSession(Client* ps) {
@@ -143,11 +148,11 @@ void Client::setPreviousSession(Client* ps) {
   keepAlive = ps->keepAlive;
 }
 
-int Client::recvConnectMessage(ConnectMessage* m) {return -1;}
+MQTT_ERROR Client::recvConnectMessage(ConnectMessage* m) {return INVALID_MESSAGE_CAME;}
 
-int Client::recvConnackMessage(ConnackMessage* m) {
+MQTT_ERROR Client::recvConnackMessage(ConnackMessage* m) {
     if (m->ReturnCode != CONNECT_ACCEPTED) {
-        return m->ReturnCode;
+        //return m->ReturnCode;
     }
 
     isConnecting = true;
@@ -159,7 +164,7 @@ int Client::recvConnackMessage(ConnackMessage* m) {
 }
 
 
-int Client::recvPublishMessage(PublishMessage* m) {
+MQTT_ERROR Client::recvPublishMessage(PublishMessage* m) {
     if (m->fh->Dup) {
         // re-delivered;
     } else {
@@ -173,34 +178,34 @@ int Client::recvPublishMessage(PublishMessage* m) {
     switch (m->fh->QoS) {
     case 0:
         if (m->fh->PacketID != 0) {
-            return -1; // packet id should be zero
+            return PACKET_ID_SHOULD_BE_ZERO; // packet id should be zero
         }
     case 1:
         return sendMessage(new PubackMessage(m->fh->PacketID));
     case 2:
         return sendMessage(new PubrecMessage(m->fh->PacketID));
     }
-    return 1;
+    return NO_ERROR;
 }
 
 
-int Client::recvPubackMessage(PubackMessage* m) {
+MQTT_ERROR Client::recvPubackMessage(PubackMessage* m) {
     if (m->fh->PacketID > 0) {
         return ackMessage(m->fh->PacketID);
     }
-    return 1;
+    return NO_ERROR;
 }
 
-int Client::recvPubrecMessage(PubrecMessage* m) {
-    int err = ackMessage(m->fh->PacketID);
+MQTT_ERROR Client::recvPubrecMessage(PubrecMessage* m) {
+    MQTT_ERROR err = ackMessage(m->fh->PacketID);
     if (err < 0) {
         return err;
     }
     err = sendMessage(new PubrelMessage(m->fh->PacketID));
     return err;
 }
-int Client::recvPubrelMessage(PubrelMessage* m) {
-    int err = ackMessage(m->fh->PacketID);
+MQTT_ERROR Client::recvPubrelMessage(PubrelMessage* m) {
+    MQTT_ERROR err = ackMessage(m->fh->PacketID);
     if (err < 0) {
         return err;
     }
@@ -208,28 +213,28 @@ int Client::recvPubrelMessage(PubrelMessage* m) {
     return err;
 }
 
-int Client::recvPubcompMessage(PubcompMessage* m) {
+MQTT_ERROR Client::recvPubcompMessage(PubcompMessage* m) {
     return ackMessage(m->fh->PacketID);
 }
 
-int Client::recvSubscribeMessage(SubscribeMessage* m) {return -1;}
+MQTT_ERROR Client::recvSubscribeMessage(SubscribeMessage* m) {return INVALID_MESSAGE_CAME;}
 
-int Client::recvSubackMessage(SubackMessage* m) {
+MQTT_ERROR Client::recvSubackMessage(SubackMessage* m) {
     return ackMessage(m->fh->PacketID);
 }
 
-int Client::recvUnsubscribeMessage(UnsubscribeMessage* m) {return -1;}
+MQTT_ERROR Client::recvUnsubscribeMessage(UnsubscribeMessage* m) {return INVALID_MESSAGE_CAME;}
 
-int Client::recvUnsubackMessage(UnsubackMessage* m) {
+MQTT_ERROR Client::recvUnsubackMessage(UnsubackMessage* m) {
     return ackMessage(m->fh->PacketID);
 }
 
-int Client::recvPingreqMessage(PingreqMessage* m) {return -1;}
+MQTT_ERROR Client::recvPingreqMessage(PingreqMessage* m) {return INVALID_MESSAGE_CAME;}
 
-int Client::recvPingrespMessage(PingrespMessage* m) {
+MQTT_ERROR Client::recvPingrespMessage(PingrespMessage* m) {
     // TODO: implement duration base connection management
-    return 1;
+    return NO_ERROR;
 }
 
-int Client::recvDisconnectMessage(DisconnectMessage* m) {return -1;}
+MQTT_ERROR Client::recvDisconnectMessage(DisconnectMessage* m) {return INVALID_MESSAGE_CAME;}
 
