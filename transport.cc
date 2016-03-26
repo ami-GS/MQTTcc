@@ -2,6 +2,7 @@
 #include <sys/socket.h>
 #include <netdb.h>
 #include <arpa/inet.h>
+#include <unistd.h>
 #include "transport.h"
 #include "frame.h"
 
