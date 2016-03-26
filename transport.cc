@@ -22,7 +22,7 @@ int64_t Transport::sendMessage(Message* m) {
         return -1;
     }
     write(sock, writeBuff, len);
-    delete m;
+    delete m; // TODO: this is little fast, need to wait ack
     return len;
 }
 
