@@ -2,6 +2,7 @@
 #define MQTT_ERROR_H_
 
 #include <string>
+#include <iostream>
 
 enum MQTT_ERROR {
     NO_ERROR = -1,
@@ -59,5 +60,10 @@ static const std::string ErrorString[] = {
    "FAIL_TO_SET_PACKET_ID",
    "UNSUBSCRIBE_TO_NON_SUBSCRIBE_TOPIC",
 };
+
+void emitError(MQTT_ERROR e) {
+  std::cout << ErrorString[e] << std::endl;
+  return;
+}
     
 #endif // MQTT_ERROR_H_
