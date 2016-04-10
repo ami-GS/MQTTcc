@@ -121,8 +121,8 @@ Message::~Message() {
     delete fh;
 }
 
-ConnectMessage::ConnectMessage(uint16_t keepAlive, std::string id, bool cleanSession, const struct Will* will, const struct User* user) :
-    KeepAlive(keepAlive), ClientID(id), CleanSession(cleanSession), Will(will), User(user), Flags(0), Protocol(MQTT_3_1_1), Message(new FixedHeader(CONNECT_MESSAGE_TYPE, false, 0, false, 0, 0)) {
+ConnectMessage::ConnectMessage(uint16_t keepAlive, std::string id, bool cleanSession, const struct Will* w, const struct User* u) :
+    KeepAlive(keepAlive), ClientID(id), CleanSession(cleanSession), will(w), user(u), Flags(0), Protocol(MQTT_3_1_1), Message(new FixedHeader(CONNECT_MESSAGE_TYPE, false, 0, false, 0, 0)) {
     uint32_t length = 6 + Protocol.name.size() + 2 + id.size();
     if (cleanSession) {
         Flags |= 1; //CLEANSESSION_FLAG;
@@ -148,8 +148,8 @@ ConnectMessage::ConnectMessage(uint16_t keepAlive, std::string id, bool cleanSes
 }
 
 ConnectMessage::~ConnectMessage() {
-    delete Will;
-    delete User;
+    delete will;
+    delete user;
 }
 
 int64_t ConnectMessage::GetWire(uint8_t* wire) {
@@ -173,26 +173,26 @@ int64_t ConnectMessage::GetWire(uint8_t* wire) {
     buf += len;
 
     if ((Flags & WILL_FLAG) == WILL_FLAG) {
-        len = UTF8_encode(buf, Will->Topic);
+        len = UTF8_encode(buf, will->Topic);
         if (len == -1) {
             return -1;
         }
         buf += len;
-        len = UTF8_encode(buf, Will->Message);
+        len = UTF8_encode(buf, will->Message);
         if (len == -1) {
             return -1;
         }
         buf += len;
     }
     if ((Flags & USERNAME_FLAG) == USERNAME_FLAG) {
-        len = UTF8_encode(buf, User->Name);
+        len = UTF8_encode(buf, user->Name);
         if (len == -1) {
             return -1;
         }
         buf += len;
     }
     if ((Flags & PASSWORD_FLAG) == PASSWORD_FLAG) {
-        len = UTF8_encode(buf, User->Passwd);
+        len = UTF8_encode(buf, user->Passwd);
         if (len == -1) {
             return -1;
         }
@@ -233,7 +233,7 @@ int64_t ConnectMessage::parse(const uint8_t* wire, MQTT_ERROR& err) {
         buf += len;
         bool wRetain = (this->Flags & WILL_RETAIN_FLAG) == WILL_RETAIN_FLAG;
         uint8_t wQoS = (uint8_t)((this->Flags & WILL_QOS3_FLAG) >> 3);
-        this->Will = new struct Will(wTopic, wMessage, wRetain, wQoS);
+        this->will = new struct Will(wTopic, wMessage, wRetain, wQoS);
     }
 
     if ((this->Flags & USERNAME_FLAG) == USERNAME_FLAG || (this->Flags & PASSWORD_FLAG) == PASSWORD_FLAG) {
@@ -246,7 +246,7 @@ int64_t ConnectMessage::parse(const uint8_t* wire, MQTT_ERROR& err) {
             passwd = UTF8_decode(buf, &len);
             buf += len;
         }
-        this->User = new struct User(name, passwd);
+        this->user = new struct User(name, passwd);
     }
 
     return buf - wire;
@@ -284,7 +284,7 @@ std::string ConnectMessage::FlagString() {
 
 std::string ConnectMessage::String() {
     std::stringstream ss;
-    ss << fh->String() << "Protocol=" << Protocol.name << ":" << Protocol.level << ", Flags=\n" << FlagString() << "\t, KeepAlive=" << KeepAlive << ", ClientID=" << ClientID << ", Will={" << Will->Topic << ":" << Will->Message << ", Retain=" << Will->Retain << ", QoS=" << Will->QoS << "}, UserInfo={" << User->Name << ":" << User->Passwd << "}";
+    ss << fh->String() << "Protocol=" << Protocol.name << ":" << Protocol.level << ", Flags=\n" << FlagString() << "\t, KeepAlive=" << KeepAlive << ", ClientID=" << ClientID << ", Will={" << will->Topic << ":" << will->Message << ", Retain=" << will->Retain << ", QoS=" << will->QoS << "}, UserInfo={" << user->Name << ":" << user->Passwd << "}";
     return ss.str();
 }
 
