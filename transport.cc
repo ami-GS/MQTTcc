@@ -3,6 +3,7 @@
 #include <netdb.h>
 #include <arpa/inet.h>
 #include <unistd.h>
+#include <string.h>
 #include "transport.h"
 #include "frame.h"
 

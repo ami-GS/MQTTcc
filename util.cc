@@ -1,6 +1,6 @@
 #include "util.h"
 #include "mqttError.h"
-#include <string>
+#include <string.h>
 #include <stdint.h>
 
 
@@ -8,7 +8,7 @@ int32_t UTF8_encode(uint8_t* wire, std::string s) {
     uint8_t* buf = wire;
     *buf = (uint8_t)(s.size() >> 8);
     *(++buf) = (uint8_t)(s.size());
-    std::memcpy(++buf, s.c_str(), s.size());
+    memcpy(++buf, s.c_str(), s.size());
     return (int32_t)(2 + s.size());
 }
 

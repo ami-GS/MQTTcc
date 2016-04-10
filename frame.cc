@@ -3,6 +3,7 @@
 #include "frame.h"
 #include "util.h"
 #include "mqttError.h"
+#include <string.h>
 
 int64_t GetMessage(uint8_t* wire, Message* m, MQTT_ERROR& err) {
     uint8_t* buf = wire;
