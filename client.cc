@@ -1,18 +1,10 @@
 #include "client.h"
 #include "util.h"
-#include <random>
-#include <chrono>
 
-Client::Client(const std::string id, const User* user, uint16_t keepAlive, const Will* will) : ID(id), user(user), cleanSession(false), keepAlive(keepAlive), will(will), isConnecting(false), randPacketID(1, 65535) {
-  std::random_device rnd;
-  unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
-  mt(); // TODO: apply seed
+Client::Client(const std::string id, const User* user, uint16_t keepAlive, const Will* will) : Terminal(id, user, keepAlive, will) {
 }
 
-Client::~Client() {
-    delete user;
-    delete will;
-}
+Client::~Client() {}
 
 MQTT_ERROR Client::sendMessage(Message* m) {
     if (!isConnecting) {

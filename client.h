@@ -7,21 +7,8 @@
 #include "transport.h"
 #include "terminal.h"
 #include "string"
-#include <random>
 
 class Client : Terminal {
-private:
-    Transport* ct;
-    bool isConnecting;
-    bool cleanSession;
-    std::string ID;
-    const User* user;
-    const Will* will;
-    uint16_t keepAlive;
-    std::map<uint16_t, Message*> packetIDMap;
-    std::mt19937 mt;
-    std::uniform_int_distribution<> randPacketID;
-    //Broker
 public:
     Client(const std::string id, const User* user, uint16_t keepAlive, const Will* will);
     ~Client();

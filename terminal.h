@@ -3,10 +3,25 @@
 
 #include "frame.h"
 #include "mqttError.h"
+#include "transport.h"
+#include <map>
+#include <random>
 
 class Terminal {
 public:
-    Terminal();
+    Transport* ct;
+    bool isConnecting;
+    bool cleanSession;
+    std::string ID;
+    const User* user;
+    const Will* will;
+    uint16_t keepAlive;
+    std::map<uint16_t, Message*> packetIDMap;
+    std::mt19937 mt;
+    std::uniform_int_distribution<> randPacketID;
+public:
+    Terminal() {};
+    Terminal(const std::string id, const User* user, uint16_t keepAlive, const Will* will);
     virtual ~Terminal();
     virtual MQTT_ERROR recvConnectMessage(ConnectMessage* m) = 0;
     virtual MQTT_ERROR recvConnackMessage(ConnackMessage* m) = 0;
