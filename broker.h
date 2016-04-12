@@ -3,11 +3,22 @@
 
 #include "frame.h"
 #include "terminal.h"
+#include <map>
+#include <string.h>
 
 class Broker : Terminal {
 public:
     Broker();
     ~Broker();
+};
+
+class BrokerSideClient : Terminal {
+private:
+    Broker* broker;
+    std::map<std::string, uint8_t> subTopics;
+public:
+    BrokerSideClient(Transport* ct, Broker* broker);
+    ~BrokerSideClient();
     MQTT_ERROR recvConnectMessage(ConnectMessage* m);
     MQTT_ERROR recvConnackMessage(ConnackMessage* m);
     MQTT_ERROR recvPublishMessage(PublishMessage* m);
