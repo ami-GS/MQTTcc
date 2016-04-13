@@ -3,13 +3,18 @@
 
 #include "frame.h"
 #include "terminal.h"
+#include "topicTree.h"
 #include <map>
 #include <string.h>
 
 class Broker : Terminal {
+    std::map<std::string, Terminal*>clients;
+    TopicNode* topicRoot;
 public:
     Broker();
     ~Broker();
+    MQTT_ERROR Start();
+    std::string ApplyDummyClientID();
 };
 
 class BrokerSideClient : Terminal {

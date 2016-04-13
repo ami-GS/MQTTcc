@@ -1,5 +1,6 @@
 #include "broker.h"
 #include "frame.h"
+#include <sstream>
 
 
 Broker::Broker() {
@@ -9,6 +10,17 @@ Broker::Broker() {
 Broker::~Broker() {
 
 }
+
+MQTT_ERROR Broker::Start() {
+    return NO_ERROR;
+}
+
+std::string Broker::ApplyDummyClientID() {
+    std::stringstream ss;
+    ss << "DummyClientID" << clients.size() + 1;
+    return ss.str();
+}
+
 
 BrokerSideClient::BrokerSideClient(Transport* ct, Broker* b) : broker(b), Terminal("", NULL, 0, NULL) {
     this->ct = ct;
