@@ -4,11 +4,11 @@
 
 
 Broker::Broker() {
-
+    topicRoot = new TopicNode("");
 }
 
 Broker::~Broker() {
-
+    delete topicRoot;
 }
 
 MQTT_ERROR Broker::Start() {
