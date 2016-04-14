@@ -6,30 +6,6 @@ Client::Client(const std::string id, const User* user, uint16_t keepAlive, const
 
 Client::~Client() {}
 
-MQTT_ERROR Client::sendMessage(Message* m) {
-    if (!isConnecting) {
-        return NOT_CONNECTED;
-    }
-    uint16_t packetID = m->fh->PacketID;
-    if (packetIDMap.find(packetID) != packetIDMap.end()) {
-        return PACKET_ID_IS_USED_ALREADY;
-    }
-    int64_t len = ct->sendMessage(m);
-    if (len != -1) {
-        if (m->fh->Type == PUBLISH_MESSAGE_TYPE) {
-            if (packetID > 0) {
-                packetIDMap[packetID] = m;
-            }
-        } else if (m->fh->Type == PUBREC_MESSAGE_TYPE || m->fh->Type == SUBSCRIBE_MESSAGE_TYPE || m->fh->Type == UNSUBSCRIBE_MESSAGE_TYPE || m->fh->Type == PUBREL_MESSAGE_TYPE) {
-            if (packetID == 0) {
-                return PACKET_ID_SHOULD_NOT_BE_ZERO;
-            }
-            packetIDMap[packetID] = m;
-        }
-    }
-    return NO_ERROR;
-}
-
 MQTT_ERROR Client::getUsablePacketID(uint16_t* id) {
     bool exists = true;
     for (int trial = 0; exists; trial++) {
@@ -40,14 +16,6 @@ MQTT_ERROR Client::getUsablePacketID(uint16_t* id) {
         *id = randPacketID(mt);
         exists = !(packetIDMap.find(*id) == packetIDMap.end());
     }
-    return NO_ERROR;
-}
-
-MQTT_ERROR Client::ackMessage(uint16_t pID) {
-    if (packetIDMap.find(pID) == packetIDMap.end()) {
-        return PACKET_ID_DOES_NOT_EXIST; // packet id does not exist
-    }
-    packetIDMap.erase(pID);
     return NO_ERROR;
 }
 
