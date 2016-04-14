@@ -31,10 +31,36 @@ BrokerSideClient::~BrokerSideClient() {}
 MQTT_ERROR BrokerSideClient::recvConnectMessage(ConnectMessage* m) {return NO_ERROR;}
 MQTT_ERROR BrokerSideClient::recvConnackMessage(ConnackMessage* m) {return INVALID_MESSAGE_CAME;}
 MQTT_ERROR BrokerSideClient::recvPublishMessage(PublishMessage* m) {return NO_ERROR;}
-MQTT_ERROR BrokerSideClient::recvPubackMessage(PubackMessage* m) {return NO_ERROR;}
-MQTT_ERROR BrokerSideClient::recvPubrecMessage(PubrecMessage* m) {return NO_ERROR;}
-MQTT_ERROR BrokerSideClient::recvPubrelMessage(PubrelMessage* m) {return NO_ERROR;}
-MQTT_ERROR BrokerSideClient::recvPubcompMessage(PubcompMessage* m) {return NO_ERROR;}
+MQTT_ERROR BrokerSideClient::recvPubackMessage(PubackMessage* m) {
+    if (m->fh->PacketID > 0) {
+        return ackMessage(m->fh->PacketID);
+    }
+    return NO_ERROR;
+}
+
+MQTT_ERROR BrokerSideClient::recvPubrecMessage(PubrecMessage* m) {
+    MQTT_ERROR err = ackMessage(m->fh->PacketID);
+    if (err < 0) {
+        return err;
+    }
+    err = sendMessage(new PubrelMessage(m->fh->PacketID));
+    return err;
+}
+
+MQTT_ERROR BrokerSideClient::recvPubrelMessage(PubrelMessage* m) {
+    MQTT_ERROR err = ackMessage(m->fh->PacketID);
+    if (err < 0) {
+        return err;
+    }
+    err = sendMessage(new PubcompMessage(m->fh->PacketID));
+    return err;
+}
+
+MQTT_ERROR BrokerSideClient::recvPubcompMessage(PubcompMessage* m) {
+    return ackMessage(m->fh->PacketID);
+}
+
+
 MQTT_ERROR BrokerSideClient::recvSubscribeMessage(SubscribeMessage* m) {return NO_ERROR;}
 MQTT_ERROR BrokerSideClient::recvSubackMessage(SubackMessage* m) {return INVALID_MESSAGE_CAME;}
 MQTT_ERROR BrokerSideClient::recvUnsubscribeMessage(UnsubscribeMessage* m) {return NO_ERROR;}
