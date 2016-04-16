@@ -45,3 +45,29 @@ MQTT_ERROR Terminal::sendMessage(Message* m) {
     }
     return NO_ERROR;
 }
+
+MQTT_ERROR Terminal::redelivery() {
+    MQTT_ERROR err;
+    if (!cleanSession && packetIDMap.size() > 0) {
+        for (std::map<uint16_t, Message*>::iterator itPair = packetIDMap.begin(); itPair != packetIDMap.end(); itPair++) {
+            err = sendMessage(itPair->second);
+            if (err != NO_ERROR) {
+                return err;
+            }
+        }
+    }
+    return NO_ERROR;
+}
+
+MQTT_ERROR Terminal::getUsablePacketID(uint16_t* id) {
+    bool exists = true;
+    for (int trial = 0; exists; trial++) {
+        if (trial == 5) {
+            *id = -1;
+            return FAIL_TO_SET_PACKET_ID;
+        }
+        *id = randPacketID(mt);
+        exists = !(packetIDMap.find(*id) == packetIDMap.end());
+    }
+    return NO_ERROR;
+}

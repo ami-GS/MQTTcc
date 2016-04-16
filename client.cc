@@ -6,19 +6,6 @@ Client::Client(const std::string id, const User* user, uint16_t keepAlive, const
 
 Client::~Client() {}
 
-MQTT_ERROR Client::getUsablePacketID(uint16_t* id) {
-    bool exists = true;
-    for (int trial = 0; exists; trial++) {
-        if (trial == 5) {
-            *id = -1;
-            return FAIL_TO_SET_PACKET_ID;
-        }
-        *id = randPacketID(mt);
-        exists = !(packetIDMap.find(*id) == packetIDMap.end());
-    }
-    return NO_ERROR;
-}
-
 MQTT_ERROR Client::connect(const std::string addr, int port, bool cs) {
     if (ID.size() == 0 && !cleanSession) {
         return CLEANSESSION_MUST_BE_TRUE;
@@ -87,18 +74,6 @@ MQTT_ERROR Client::unsubscribe(std::vector<std::string> topics) {
     return sendMessage(new UnsubscribeMessage(id, topics, topics.size()));
 }
 
-MQTT_ERROR Client::redelivery() {
-    MQTT_ERROR err;
-    if (!cleanSession && packetIDMap.size() > 0) {
-        for (std::map<uint16_t, Message*>::iterator itPair = packetIDMap.begin(); itPair != packetIDMap.end(); itPair++) {
-            err = sendMessage(itPair->second);
-            if (err != NO_ERROR) {
-                return err;
-            }
-        }
-    }
-    return NO_ERROR;
-}
 
 void Client::setPreviousSession(Client* ps) {
   packetIDMap = ps->packetIDMap;
