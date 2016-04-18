@@ -16,7 +16,6 @@ public:
     MQTT_ERROR publish(const std::string topic, const std::string data, uint8_t qos, bool retain);
     MQTT_ERROR subscribe(std::vector<SubscribeTopic*> topics);
     MQTT_ERROR unsubscribe(std::vector<std::string> topics);
-    void setPreviousSession(Client* ps);
     MQTT_ERROR recvConnectMessage(ConnectMessage* m);
     MQTT_ERROR recvConnackMessage(ConnackMessage* m);
     MQTT_ERROR recvPublishMessage(PublishMessage* m);

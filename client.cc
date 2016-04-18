@@ -74,15 +74,6 @@ MQTT_ERROR Client::unsubscribe(std::vector<std::string> topics) {
     return sendMessage(new UnsubscribeMessage(id, topics, topics.size()));
 }
 
-
-void Client::setPreviousSession(Client* ps) {
-  packetIDMap = ps->packetIDMap;
-  cleanSession = ps->cleanSession;
-  will = ps->will;
-  user = ps->user;
-  keepAlive = ps->keepAlive;
-}
-
 MQTT_ERROR Client::recvConnectMessage(ConnectMessage* m) {return INVALID_MESSAGE_CAME;}
 
 MQTT_ERROR Client::recvConnackMessage(ConnackMessage* m) {

@@ -28,6 +28,15 @@ BrokerSideClient::BrokerSideClient(Transport* ct, Broker* b) : broker(b), Termin
 
 BrokerSideClient::~BrokerSideClient() {}
 
+void BrokerSideClient::setPreviousSession(BrokerSideClient* ps) {
+    subTopics = ps->subTopics;
+    packetIDMap = ps->packetIDMap;
+    cleanSession = ps->cleanSession;
+    will = ps->will;
+    user = ps->user;
+    keepAlive = ps->keepAlive;
+}
+
 MQTT_ERROR BrokerSideClient::recvConnectMessage(ConnectMessage* m) {return NO_ERROR;}
 MQTT_ERROR BrokerSideClient::recvConnackMessage(ConnackMessage* m) {return INVALID_MESSAGE_CAME;}
 MQTT_ERROR BrokerSideClient::recvPublishMessage(PublishMessage* m) {return NO_ERROR;}
@@ -63,7 +72,10 @@ MQTT_ERROR BrokerSideClient::recvPubcompMessage(PubcompMessage* m) {
 
 MQTT_ERROR BrokerSideClient::recvSubscribeMessage(SubscribeMessage* m) {return NO_ERROR;}
 MQTT_ERROR BrokerSideClient::recvSubackMessage(SubackMessage* m) {return INVALID_MESSAGE_CAME;}
-MQTT_ERROR BrokerSideClient::recvUnsubscribeMessage(UnsubscribeMessage* m) {return NO_ERROR;}
+MQTT_ERROR BrokerSideClient::recvUnsubscribeMessage(UnsubscribeMessage* m) {
+    return NO_ERROR;
+}
+
 MQTT_ERROR BrokerSideClient::recvUnsubackMessage(UnsubackMessage* m) {return INVALID_MESSAGE_CAME;}
 MQTT_ERROR BrokerSideClient::recvPingreqMessage(PingreqMessage* m) {return NO_ERROR;}
 MQTT_ERROR BrokerSideClient::recvPingrespMessage(PingrespMessage* m) {return INVALID_MESSAGE_CAME;}
