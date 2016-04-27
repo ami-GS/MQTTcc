@@ -9,6 +9,7 @@
 
 class TopicNode {
     std::map<std::string, TopicNode*> nodes;
+    std::string name;
     std::string fullPath;
     std::map<std::string, uint8_t> subscribers;
     std::string allTopicName[65536]; //only for root, for broker?
@@ -23,6 +24,7 @@ public:
     int deleteSubscriber(const std::string clientID, const std::string topic, MQTT_ERROR& err);
     int applyRetain(const std::string topic, uint8_t qos, const std::string retain, MQTT_ERROR& err);
     std::string dumpTree();
+    std::vector<std::string> dumpTree2();
 };
 
 

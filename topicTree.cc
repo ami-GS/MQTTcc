@@ -129,3 +129,18 @@ std::string TopicNode::dumpTree() {
     }
     return str;
 }
+
+std::vector<std::string> TopicNode::dumpTree2() {
+    std::vector<std::string> strs;
+    if (nodes.size() == 0) {
+        strs.push_back(this->name);
+        return strs;
+    }
+    for (std::map<std::string, TopicNode*>::iterator itPair = nodes.begin(); itPair != nodes.end(); itPair++) {
+        std::vector<std::string> deepStrs = itPair->second->dumpTree2();
+        for (std::vector<std::string>::iterator it = deepStrs.begin(); it != deepStrs.end(); it++) {
+            strs.push_back(this->name + "/" + *it);
+        }
+    }
+    return strs;
+}
