@@ -17,7 +17,7 @@ class TopicNode {
 public:
     std::string retainMessage;
     uint8_t retainQoS;
-    TopicNode(std::string topic);
+    TopicNode(std::string part, std::string fPath);
     ~TopicNode();
     std::vector<TopicNode*> getTopicNode(const std::string topic, bool addNewNode, MQTT_ERROR& err);
     std::vector<SubackCode> applySubscriber(const std::string clientID, const std::string topic, uint8_t qos, MQTT_ERROR& err);

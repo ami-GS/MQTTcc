@@ -4,7 +4,7 @@
 
 
 Broker::Broker() {
-    topicRoot = new TopicNode("");
+    topicRoot = new TopicNode("", "");
 }
 
 Broker::~Broker() {

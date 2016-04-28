@@ -4,7 +4,7 @@
 #include <map>
 #include <vector>
 
-TopicNode::TopicNode(std::string topic) : nodes(), fullPath(topic), retainMessage(""), retainQoS(0), subscribers() {}
+TopicNode::TopicNode(std::string part, std::string fPath) : name(part), nodes(), fullPath(fPath), retainMessage(""), retainQoS(0), subscribers() {}
 
 TopicNode::~TopicNode() {
     for (std::map<std::string, TopicNode*>::iterator itPair = nodes.begin(); itPair != nodes.end(); itPair++) {
@@ -69,7 +69,7 @@ std::vector<TopicNode*> TopicNode::getTopicNode(const std::string topic, bool ad
                 currentPath += "/";
             }
             if (bef->nodes.find(part) == bef->nodes.end() && addNewNode) {
-                bef->nodes[part] = new TopicNode(currentPath);
+                bef->nodes[part] = new TopicNode(part, currentPath);
             } else if (bef->nodes.find(part) == bef->nodes.end()) {
                 continue;
             }
