@@ -8,9 +8,9 @@
 #include <string.h>
 
 class Broker : Terminal {
+public:
     std::map<std::string, Terminal*>clients;
     TopicNode* topicRoot;
-public:
     Broker();
     ~Broker();
     MQTT_ERROR Start();

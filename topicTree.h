@@ -10,11 +10,11 @@
 class TopicNode {
     std::map<std::string, TopicNode*> nodes;
     std::string name;
-    std::string fullPath;
-    std::map<std::string, uint8_t> subscribers;
     std::string allTopicName[65536]; //only for root, for broker?
     std::vector<TopicNode*> getNodesByNumberSign();
 public:
+    std::map<std::string, uint8_t> subscribers;
+    std::string fullPath;
     std::string retainMessage;
     uint8_t retainQoS;
     TopicNode(std::string part, std::string fPath);
