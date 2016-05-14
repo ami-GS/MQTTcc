@@ -106,8 +106,20 @@ MQTT_ERROR BrokerSideClient::recvSubscribeMessage(SubscribeMessage* m) {
 
 
 MQTT_ERROR BrokerSideClient::recvSubackMessage(SubackMessage* m) {return INVALID_MESSAGE_CAME;}
+
 MQTT_ERROR BrokerSideClient::recvUnsubscribeMessage(UnsubscribeMessage* m) {
-    return NO_ERROR;
+    if (m->topics.size() == 0) {
+        return PROTOCOL_VIOLATION;
+    }
+
+    MQTT_ERROR err = NO_ERROR;
+    for (std::vector<std::string>::iterator it = m->topics.begin(); it != m->topics.end(); it++) {
+        this->broker->topicRoot->deleteSubscriber(this->ID, *it, err);
+        this->subTopics.erase(*it);
+    }
+
+    this->sendMessage(new UnsubackMessage(m->fh->PacketID));
+    return err;
 }
 
 MQTT_ERROR BrokerSideClient::recvUnsubackMessage(UnsubackMessage* m) {return INVALID_MESSAGE_CAME;}
