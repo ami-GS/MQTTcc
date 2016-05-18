@@ -209,9 +209,8 @@ struct SubscribeTopic {
 class SubscribeMessage : public Message {
 public:
     std::vector<SubscribeTopic*> subTopics;
-    int topicNum;
     
-    SubscribeMessage(uint16_t id, std::vector<SubscribeTopic*> topics, int tN);
+    SubscribeMessage(uint16_t id, std::vector<SubscribeTopic*> topics);
     SubscribeMessage(FixedHeader* fh) : Message(fh) {};
     ~SubscribeMessage();
     int64_t GetWire(uint8_t* wire);
@@ -231,9 +230,8 @@ static const std::string SubackCodeString[4] = {"ACK_MAX_QOS0", "ACK_MAX_QOS1", 
 class SubackMessage : public Message {
 public:
     std::vector<SubackCode> returnCodes;
-    int codeNum;
     
-    SubackMessage(uint16_t id, std::vector<SubackCode> codes, int cN);
+    SubackMessage(uint16_t id, std::vector<SubackCode> codes);
     SubackMessage(FixedHeader* fh) : Message(fh) {};
     ~SubackMessage() {};
 
@@ -245,9 +243,8 @@ public:
 class UnsubscribeMessage : public Message {
 public:
     std::vector<std::string> topics;
-    int topicNum;
 
-    UnsubscribeMessage(uint16_t id, std::vector<std::string> topics, int tN);
+    UnsubscribeMessage(uint16_t id, std::vector<std::string> topics);
     UnsubscribeMessage(FixedHeader* fh) : Message(fh) {};
     ~UnsubscribeMessage() {};
 
@@ -299,14 +296,5 @@ public:
     std::string String();
     int64_t parse(const uint8_t* wire, MQTT_ERROR& err);
 };
-
-
-
-
-
-
-
-
-
 
 #endif // MQTT_FRAME_H

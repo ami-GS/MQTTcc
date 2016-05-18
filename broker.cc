@@ -101,7 +101,7 @@ MQTT_ERROR BrokerSideClient::recvSubscribeMessage(SubscribeMessage* m) {
             }
         }
     }
-    return sendMessage(new SubackMessage(m->fh->PacketID, returnCodes, returnCodes.size()));
+    return sendMessage(new SubackMessage(m->fh->PacketID, returnCodes));
 }
 
 

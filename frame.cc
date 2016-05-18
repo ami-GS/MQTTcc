@@ -482,15 +482,15 @@ std::string PubcompMessage::String() {
     return ss.str();
 }
 
-SubscribeMessage::SubscribeMessage(uint16_t id, std::vector<SubscribeTopic*> topics, int tN) : subTopics(topics), topicNum(tN), Message(new FixedHeader(SUBSCRIBE_MESSAGE_TYPE, false, 1, false, 2+tN, id)) {
-    for (int i = 0; i < topicNum; i++) {
-        fh->Length += topics[i]->topic.size();
+SubscribeMessage::SubscribeMessage(uint16_t id, std::vector<SubscribeTopic*> topics) : subTopics(topics), Message(new FixedHeader(SUBSCRIBE_MESSAGE_TYPE, false, 1, false, 2+topics.size(), id)) {
+    for (std::vector<SubscribeTopic*>::iterator it = subTopics.begin(); it != subTopics.end(); it++) {
+        fh->Length += (*it)->topic.size();
     }
 }
 
 SubscribeMessage::~SubscribeMessage() {
-    for (int i = 0; i < topicNum; i++) {
-        delete subTopics[i];
+    for (std::vector<SubscribeTopic*>::iterator it = subTopics.begin(); it != subTopics.end(); it++) {
+        delete (*it);
     }
 }
 
@@ -503,7 +503,7 @@ int64_t SubscribeMessage::GetWire(uint8_t* wire) {
     buf += len;
     *(buf++) = (uint8_t)(fh->PacketID >> 8);
     *(buf++) = (uint8_t)fh->PacketID;
-    for (int i = 0; i < topicNum; i++) {
+    for (int i = 0; i < subTopics.size(); i++) {
         len = UTF8_encode(buf, subTopics[i]->topic);
         if (len == -1) {
             return -1;
@@ -533,7 +533,6 @@ int64_t SubscribeMessage::parse(const uint8_t* wire, MQTT_ERROR& err) {
         }
         uint8_t qos = *(buf++) & 0x03;
         subTopics.push_back(new SubscribeTopic(topic, qos));
-        topicNum++;
         i += len + 1;
     }
 
@@ -543,14 +542,14 @@ int64_t SubscribeMessage::parse(const uint8_t* wire, MQTT_ERROR& err) {
 std::string SubscribeMessage::String() {
     std::stringstream ss;
     ss << fh->String() << "PacketID=" << fh->PacketID << "\n";
-    for (int i = 0; i < topicNum; i++) {
+    for (int i = 0; i < subTopics.size(); i++) {
         ss << "\t" << i << ": Topic=" << subTopics[i]->topic << ", QoS=" << subTopics[i]->qos << "\n";
     }
 
     return ss.str();
 }
 
-SubackMessage::SubackMessage(uint16_t id, std::vector<SubackCode> codes, int cN) : returnCodes(codes), codeNum(cN), Message(new FixedHeader(SUBACK_MESSAGE_TYPE, false, 0, false, 2+cN, id)) {}
+SubackMessage::SubackMessage(uint16_t id, std::vector<SubackCode> codes) : returnCodes(codes), Message(new FixedHeader(SUBACK_MESSAGE_TYPE, false, 0, false, 2+codes.size(), id)) {}
 
 
 int64_t SubackMessage::GetWire(uint8_t* wire) {
@@ -574,7 +573,6 @@ int64_t SubackMessage::parse(const uint8_t* wire, MQTT_ERROR& err) {
     fh->PacketID |= *(buf++);
     for (int i = 0; i < fh->Length-2; i++) {
         returnCodes.push_back((SubackCode)*(buf++));
-        codeNum++;
     }
 
     return buf - wire;
@@ -583,15 +581,15 @@ int64_t SubackMessage::parse(const uint8_t* wire, MQTT_ERROR& err) {
 std::string SubackMessage::String() {
     std::stringstream ss;
     ss << fh->String() << "PacketID=" << fh->PacketID << "\n";
-    for (int i = 0; i < codeNum; i++) {
+    for (int i = 0; i < returnCodes.size(); i++) {
         ss << "\t" << i << ": " << SubackCodeString[returnCodes[i]] << "\n";
     }
 
     return ss.str();
 }
 
-UnsubscribeMessage::UnsubscribeMessage(uint16_t id, std::vector<std::string> topics, int tN) : topics(topics), topicNum(tN), Message(new FixedHeader(UNSUBSCRIBE_MESSAGE_TYPE, false, 1, false, 2 + 2*tN, id)) {
-    for (int i = 0; i < topicNum; i++) {
+UnsubscribeMessage::UnsubscribeMessage(uint16_t id, std::vector<std::string> topics) : topics(topics), Message(new FixedHeader(UNSUBSCRIBE_MESSAGE_TYPE, false, 1, false, 2 + 2*topics.size(), id)) {
+    for (int i = 0; i < topics.size(); i++) {
         fh->Length += topics[i].size();
     }
 }
@@ -626,7 +624,6 @@ int64_t UnsubscribeMessage::parse(const uint8_t* wire, MQTT_ERROR& err) {
     fh->PacketID |= *(buf++);
     for (int i = 0; i < fh->Length-2; i++) {
         topics.push_back(UTF8_decode(buf, &len));
-        topicNum++;
         buf += len;
     }
     return buf - wire;
@@ -635,7 +632,7 @@ int64_t UnsubscribeMessage::parse(const uint8_t* wire, MQTT_ERROR& err) {
 std::string UnsubscribeMessage::String() {
     std::stringstream ss;
     ss << fh->String() << "PacketID=" << fh->PacketID << "\n";
-    for (int i = 0; i < topicNum; i++) {
+    for (int i = 0; i < topics.size(); i++) {
         ss << "\t" << i << ": " << topics[i] << "\n";
     }
 

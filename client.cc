@@ -52,7 +52,7 @@ MQTT_ERROR Client::subscribe(std::vector<SubscribeTopic*> topics) {
             } // has suffix of '#' and '+'
         }
     }
-    return sendMessage(new SubscribeMessage(id, topics, topics.size()));
+    return sendMessage(new SubscribeMessage(id, topics));
 }
 
 MQTT_ERROR Client::unsubscribe(std::vector<std::string> topics) {
@@ -71,7 +71,7 @@ MQTT_ERROR Client::unsubscribe(std::vector<std::string> topics) {
     if (err != NO_ERROR) {
         return err;
     }
-    return sendMessage(new UnsubscribeMessage(id, topics, topics.size()));
+    return sendMessage(new UnsubscribeMessage(id, topics));
 }
 
 MQTT_ERROR Client::recvConnectMessage(ConnectMessage* m) {return INVALID_MESSAGE_CAME;}
