@@ -23,8 +23,7 @@ public:
     std::vector<SubackCode> applySubscriber(const std::string clientID, const std::string topic, uint8_t qos, MQTT_ERROR& err);
     int deleteSubscriber(const std::string clientID, const std::string topic, MQTT_ERROR& err);
     int applyRetain(const std::string topic, uint8_t qos, const std::string retain, MQTT_ERROR& err);
-    std::string dumpTree();
-    std::vector<std::string> dumpTree2();
+    std::vector<std::string> dumpTree();
 };
 
 
