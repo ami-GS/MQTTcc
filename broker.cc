@@ -76,14 +76,13 @@ MQTT_ERROR BrokerSideClient::recvSubscribeMessage(SubscribeMessage* m) {
     MQTT_ERROR err; // this sould be duplicate?
     for (std::vector<SubscribeTopic*>::iterator it = m->subTopics.begin(); it != m->subTopics.end(); it++) {
         std::vector<TopicNode*> nodes = broker->topicRoot->getTopicNode((*it)->topic, true, err);
+        SubackCode code = (SubackCode)(*it)->qos;
+
         if (err != NO_ERROR) {
-            for (std::vector<TopicNode*>::iterator nIt = nodes.begin(); nIt != nodes.end(); nIt++) {
-                returnCodes.push_back(FAILURE);
-            }
+            code = FAILURE;
         } else {
             for (std::vector<TopicNode*>::iterator nIt = nodes.begin(); nIt != nodes.end(); nIt++) {
                 (*nIt)->subscribers[ID] = (*it)->qos;
-                returnCodes.push_back((SubackCode)(*it)->qos);
                 subTopics[(*it)->topic] = (*it)->qos;
                 if ((*nIt)->retainMessage.size() > 0) {
                     uint16_t pID = 0;
@@ -100,6 +99,7 @@ MQTT_ERROR BrokerSideClient::recvSubscribeMessage(SubscribeMessage* m) {
                 }
             }
         }
+        returnCodes.push_back(code);
     }
     return sendMessage(new SubackMessage(m->fh->PacketID, returnCodes));
 }
