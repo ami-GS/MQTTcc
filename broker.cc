@@ -15,6 +15,24 @@ MQTT_ERROR Broker::Start() {
     return NO_ERROR;
 }
 
+MQTT_ERROR Broker::checkQoSAndPublish(BrokerSideClient* requestClient, uint8_t publisherQoS, uint8_t requestedQoS, bool retain, std::string topic, std::string message) {
+    uint16_t id = 0;
+    MQTT_ERROR err = NO_ERROR;
+    uint8_t qos = publisherQoS;
+    if (requestedQoS < publisherQoS) {
+        // QoS downgrade
+        qos = requestedQoS;
+    }
+    if (qos > 0) {
+        err = requestClient->getUsablePacketID(&id);
+        if (err != NO_ERROR) {
+            return err;
+        }
+    }
+    err = requestClient->sendMessage(new PublishMessage(false, qos, retain, id, topic, message));
+    return err;
+}
+
 std::string Broker::ApplyDummyClientID() {
     std::stringstream ss;
     ss << "DummyClientID" << clients.size() + 1;
@@ -85,14 +103,7 @@ MQTT_ERROR BrokerSideClient::recvSubscribeMessage(SubscribeMessage* m) {
                 (*nIt)->subscribers[ID] = (*it)->qos;
                 subTopics[(*it)->topic] = (*it)->qos;
                 if ((*nIt)->retainMessage.size() > 0) {
-                    uint16_t pID = 0;
-                    if ((*nIt)->retainQoS > 0) {
-                        err = getUsablePacketID(&pID);
-                        if (err != NO_ERROR) {
-                            return err;
-                        }
-                    }
-                    err = sendMessage(new PublishMessage(false, (*nIt)->retainQoS, true, pID, (*nIt)->fullPath, (*nIt)->retainMessage));
+                    err = this->broker->checkQoSAndPublish(this, (*nIt)->retainQoS, (*it)->qos, true, (*nIt)->fullPath,(*nIt)->retainMessage);
                     if (err != NO_ERROR) {
                         return err;
                     }
