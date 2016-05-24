@@ -7,9 +7,10 @@
 #include <map>
 #include <string.h>
 
-class Broker : Terminal {
+class BrokerSideClient;
+class Broker {
 public:
-    std::map<std::string, Terminal*>clients;
+    std::map<std::string, BrokerSideClient*>clients;
     TopicNode* topicRoot;
     Broker();
     ~Broker();
@@ -18,7 +19,7 @@ public:
     std::string ApplyDummyClientID();
 };
 
-class BrokerSideClient : Terminal {
+class BrokerSideClient : public Terminal {
 private:
     Broker* broker;
     std::map<std::string, uint8_t> subTopics;
