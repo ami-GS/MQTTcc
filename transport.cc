@@ -8,13 +8,20 @@
 #include "frame.h"
 
 
-Transport::Transport(const std::string targetIP, int targetPort) {
+Transport::Transport(int sock, struct sockaddr_in* target) {
     memset(readBuff, 0, 65535);
     memset(writeBuff, 0, 65535);
-    sock = socket(AF_INET, SOCK_STREAM, 0);
-    target.sin_family = AF_INET;
-    target.sin_port = htons(targetPort);
-    target.sin_addr.s_addr = inet_addr(targetIP.c_str());
+    this->sock = sock;
+    this->target = target;
+}
+
+Transport::Transport(const std::string targetIP, const int targetPort) {
+    memset(readBuff, 0, 65535);
+    memset(writeBuff, 0, 65535);
+    this->sock = socket(AF_INET, SOCK_STREAM, 0);
+    this->target->sin_family = AF_INET;
+    this->target->sin_port = htons(targetPort);
+    this->target->sin_addr.s_addr = inet_addr(targetIP.c_str());
 }
 
 int64_t Transport::sendMessage(Message* m) {
