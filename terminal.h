@@ -23,6 +23,7 @@ public:
     Terminal() {};
     Terminal(const std::string id, const User* user, uint16_t keepAlive, const Will* will);
     MQTT_ERROR ackMessage(uint16_t pID);
+    MQTT_ERROR readMessageLoop();
     MQTT_ERROR sendMessage(Message* m);
     MQTT_ERROR redelivery();
     MQTT_ERROR getUsablePacketID(uint16_t* id);

@@ -22,6 +22,10 @@ MQTT_ERROR Terminal::ackMessage(uint16_t pID) {
     return NO_ERROR;
 }
 
+MQTT_ERROR Terminal::readMessageLoop() {
+    return NO_ERROR;
+}
+
 MQTT_ERROR Terminal::sendMessage(Message* m) {
     if (!isConnecting) {
         return NOT_CONNECTED;
