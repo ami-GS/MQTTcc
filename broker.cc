@@ -1,7 +1,8 @@
 #include "broker.h"
 #include "frame.h"
 #include <sstream>
-
+#include <thread>
+#include <sys/socket.h>
 
 Broker::Broker() {
     topicRoot = new TopicNode("", "");
@@ -12,6 +13,22 @@ Broker::~Broker() {
 }
 
 MQTT_ERROR Broker::Start() {
+    struct sockaddr_in addr;
+    int listener = socket(AF_INET, SOCK_STREAM, 0);
+    addr.sin_family = AF_INET;
+    addr.sin_port = 8883;
+    addr.sin_addr.s_addr = INADDR_ANY;
+    bind(listener, (struct sockaddr *)&addr, sizeof(addr));
+    listen(listener, 5);
+    while (true) {
+        struct sockaddr_in client;
+        unsigned int len = sizeof(client);
+        int sock = accept(listener, (struct sockaddr *)&client, &len);
+        BrokerSideClient* bc = new BrokerSideClient(new Transport(sock, &client), this);
+        //std::thread t(bc->readMessageLoop());
+        //t.join();
+    }
+
     return NO_ERROR;
 }
 
