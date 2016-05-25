@@ -74,6 +74,11 @@ MQTT_ERROR Client::unsubscribe(std::vector<std::string> topics) {
     return sendMessage(new UnsubscribeMessage(id, topics));
 }
 
+MQTT_ERROR Client::disconnect() {
+    //TODO: add more detail
+    return sendMessage(new DisconnectMessage());
+}
+
 MQTT_ERROR Client::recvConnectMessage(ConnectMessage* m) {return INVALID_MESSAGE_CAME;}
 
 MQTT_ERROR Client::recvConnackMessage(ConnackMessage* m) {
