@@ -74,7 +74,47 @@ void BrokerSideClient::setPreviousSession(BrokerSideClient* ps) {
 
 MQTT_ERROR BrokerSideClient::recvConnectMessage(ConnectMessage* m) {return NO_ERROR;}
 MQTT_ERROR BrokerSideClient::recvConnackMessage(ConnackMessage* m) {return INVALID_MESSAGE_CAME;}
-MQTT_ERROR BrokerSideClient::recvPublishMessage(PublishMessage* m) {return NO_ERROR;}
+MQTT_ERROR BrokerSideClient::recvPublishMessage(PublishMessage* m) {
+    if (m->fh->Dup) {
+        // re-delivered
+    } else {
+        // first time delivery
+    }
+
+    MQTT_ERROR err = NO_ERROR;
+    if (m->fh->Retain) {
+        std::string data = m->payload;
+        if (m->fh->QoS == 0 && data.size() > 0) {
+            data = "";
+        }
+        broker->topicRoot->applyRetain(m->topicName, m->fh->QoS, data, err);
+        if (err != NO_ERROR) {
+            return err;
+        }
+    }
+    broker->topicRoot->getTopicNode(m->topicName, true, err);
+    if (err != NO_ERROR) {
+        return err;
+    }
+
+    // TODO: downgrade and publish
+
+    switch (m->fh->QoS) {
+    case 0:
+        if (m->fh->PacketID != 0){
+            return PACKET_ID_SHOULD_BE_ZERO;
+        }
+    case 1:
+        sendMessage(new PubackMessage(m->fh->PacketID));
+    case 2:
+        sendMessage(new PubrecMessage(m->fh->PacketID));
+    }
+
+    return err;
+}
+
+
+
 MQTT_ERROR BrokerSideClient::recvPubackMessage(PubackMessage* m) {
     if (m->fh->PacketID > 0) {
         return ackMessage(m->fh->PacketID);
