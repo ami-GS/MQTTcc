@@ -92,12 +92,19 @@ MQTT_ERROR BrokerSideClient::recvPublishMessage(PublishMessage* m) {
             return err;
         }
     }
-    broker->topicRoot->getTopicNode(m->topicName, true, err);
+
+    std::vector<TopicNode*> nodes = broker->topicRoot->getTopicNode(m->topicName, true, err);
     if (err != NO_ERROR) {
         return err;
     }
 
-    // TODO: downgrade and publish
+    for (std::map<std::string, uint8_t>::iterator it = nodes[0]->subscribers.begin(); it != nodes[0]->subscribers.end(); it++) {
+        if (nodes[0]->subscribers.find(it->first) == nodes[0]->subscribers.end()) {
+            continue;
+        }
+        BrokerSideClient* subscriber = broker->clients[it->first];
+        err = broker->checkQoSAndPublish(subscriber, m->fh->QoS, it->second, false, m->topicName, m->payload);
+        }
 
     switch (m->fh->QoS) {
     case 0:
