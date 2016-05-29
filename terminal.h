@@ -6,10 +6,12 @@
 #include "transport.h"
 #include <map>
 #include <random>
+#include <thread>
 
 class Terminal {
 public:
     Transport* ct;
+    std::thread* readThread;
     bool isConnecting;
     bool cleanSession;
     std::string ID;
