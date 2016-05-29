@@ -34,23 +34,15 @@ int64_t Transport::sendMessage(Message* m) {
     return len;
 }
 
-int64_t Transport::readMessage(Message* m, MQTT_ERROR& err) {
-    memset(readBuff, 0, sizeof(readBuff));
-    int64_t status = read(sock, readBuff, sizeof(readBuff));
-
-    if (status > 0) {
-        /* Data read from the socket */
-        int64_t len = GetMessage(readBuff, m, err);
-        if (err != NO_ERROR) {
-            return -1;
-        }
-    } else if (status == -1) {
+MQTT_ERROR Transport::readMessage() {
+     int64_t status = read(sock, readBuff, sizeof(readBuff));
+    if (status == -1) {
         /* Error, check errno, take action... */
     } else if (status == 0) {
         /* Peer closed the socket, finish the close */
         close( sock );
         /* Further processing... */
+        //return EOF;
     }
-
-    return status;
+    return NO_ERROR;
 }

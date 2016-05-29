@@ -112,8 +112,6 @@ public:
     virtual int64_t parse(const uint8_t* wire, MQTT_ERROR& err) = 0;
 };
 
-int64_t GetMessage(uint8_t* wire, Message* m, MQTT_ERROR& err);
-
 class ConnectMessage : public Message {
 public:
     uint8_t Flags;

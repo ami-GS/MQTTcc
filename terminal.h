@@ -23,7 +23,6 @@ public:
     Terminal() {};
     Terminal(const std::string id, const User* user, uint16_t keepAlive, const Will* will);
     MQTT_ERROR ackMessage(uint16_t pID);
-    MQTT_ERROR readMessageLoop();
     MQTT_ERROR sendMessage(Message* m);
     MQTT_ERROR redelivery();
     MQTT_ERROR getUsablePacketID(uint16_t* id);
@@ -43,5 +42,9 @@ public:
     virtual MQTT_ERROR recvPingrespMessage(PingrespMessage* m) = 0;
     virtual MQTT_ERROR recvDisconnectMessage(DisconnectMessage* m) = 0;
 };
+
+
+MQTT_ERROR readLoop(Terminal* c);
+
 
 #endif // MQTT_TERMINAL_H_

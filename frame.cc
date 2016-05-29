@@ -5,60 +5,6 @@
 #include "mqttError.h"
 #include <string.h>
 
-int64_t GetMessage(uint8_t* wire, Message* m, MQTT_ERROR& err) {
-    uint8_t* buf = wire;
-    FixedHeader* fh = new FixedHeader();
-    int len = fh->parseHeader(buf, err);
-    if (err != -1) {
-        return -1;
-    }
-    buf += len;
-
-    // TODO: check whether 'constractorMap[type](fh);' can be used or not
-    Message* tmp;
-    switch (fh->Type) {
-    case CONNECT_MESSAGE_TYPE:
-        tmp = new ConnectMessage(fh);
-    case CONNACK_MESSAGE_TYPE:
-        tmp = new ConnackMessage(fh);
-    case PUBLISH_MESSAGE_TYPE:
-        tmp = new PublishMessage(fh);
-    case PUBACK_MESSAGE_TYPE:
-        tmp = new PubackMessage(fh);
-    case PUBREC_MESSAGE_TYPE:
-        tmp = new PubrecMessage(fh);
-    case PUBREL_MESSAGE_TYPE:
-        tmp = new PubrelMessage(fh);
-    case PUBCOMP_MESSAGE_TYPE:
-        tmp = new PubcompMessage(fh);
-    case SUBSCRIBE_MESSAGE_TYPE:
-        tmp = new SubscribeMessage(fh);
-    case SUBACK_MESSAGE_TYPE:
-        tmp = new SubackMessage(fh);
-    case UNSUBSCRIBE_MESSAGE_TYPE:
-        tmp = new UnsubscribeMessage(fh);
-    case UNSUBACK_MESSAGE_TYPE:
-        tmp = new UnsubackMessage(fh);
-    case PINGREQ_MESSAGE_TYPE:
-        tmp = new PingreqMessage(fh);
-    case PINGRESP_MESSAGE_TYPE:
-        tmp = new PingrespMessage(fh);
-    case DISCONNECT_MESSAGE_TYPE:
-        tmp = new DisconnectMessage(fh);
-    default:
-        err = INVALID_MESSAGE_TYPE;
-        return -1;
-    }
-    delete m;
-    *m = *tmp;
-    len = m->parse(buf, err);
-    if (err != -1) {
-        return -1;
-    }
-    m->String();
-    return len;
-}
-
 FixedHeader::FixedHeader(MessageType type, bool dup, uint8_t qos, bool retain, uint32_t length, uint16_t id) :
 Type(type), Dup(dup), QoS(qos), Retain(retain), Length(length), PacketID(id) {}
 
