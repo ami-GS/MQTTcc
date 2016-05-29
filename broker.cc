@@ -25,8 +25,8 @@ MQTT_ERROR Broker::Start() {
         unsigned int len = sizeof(client);
         int sock = accept(listener, (struct sockaddr *)&client, &len);
         BrokerSideClient* bc = new BrokerSideClient(new Transport(sock, &client), this);
-        //std::thread t(bc->readMessageLoop());
-        //t.join();
+        std::thread t(readLoop, bc);
+        t.join();
     }
 
     return NO_ERROR;
