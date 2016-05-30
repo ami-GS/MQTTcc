@@ -1,5 +1,6 @@
 #include "client.h"
 #include "util.h"
+#include <thread>
 
 Client::Client(const std::string id, const User* user, uint16_t keepAlive, const Will* will) : Terminal(id, user, keepAlive, will) {
 }
@@ -17,6 +18,9 @@ MQTT_ERROR Client::connect(const std::string addr, int port, bool cs) {
     if (len == -1) {
         //return ; // TODO: transport error?
     }
+    std::thread t(readLoop, this);
+    t.join();
+    this->readThread = &t;
     return NO_ERROR;
 }
 

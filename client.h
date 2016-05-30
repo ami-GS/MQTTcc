@@ -8,7 +8,7 @@
 #include "terminal.h"
 #include "string"
 
-class Client : Terminal {
+class Client : public Terminal {
 public:
     Client(const std::string id, const User* user, uint16_t keepAlive, const Will* will);
     ~Client();
