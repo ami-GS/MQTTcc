@@ -73,7 +73,56 @@ void BrokerSideClient::setPreviousSession(BrokerSideClient* ps) {
     keepAlive = ps->keepAlive;
 }
 
-MQTT_ERROR BrokerSideClient::recvConnectMessage(ConnectMessage* m) {return NO_ERROR;}
+MQTT_ERROR BrokerSideClient::recvConnectMessage(ConnectMessage* m) {
+    if (m->Protocol.name != MQTT_3_1_1.name) {
+        return INVALID_PROTOCOL_NAME;
+    }
+    if (m->Protocol.level != MQTT_3_1_1.level) {
+        sendMessage(new ConnackMessage(false, CONNECT_UNNACCEPTABLE_PROTOCOL_VERSION));
+        return INVALID_PROTOCOL_NAME;
+    }
+    std::map<std::string, BrokerSideClient*>::iterator bc = broker->clients.find(m->ClientID);
+    if (bc != broker->clients.end() && bc->second->isConnecting) {
+        sendMessage(new ConnackMessage(false, CONNECT_IDENTIFIER_REJECTED));
+        return CLIENT_ID_IS_USED_ALREADY;
+    }
+    bool cs = (ConnectFlag)(m->Flags&CLEANSESSION_FLAG) == CLEANSESSION_FLAG;
+    if (bc != broker->clients.end() && !cleanSession) {
+        // set previous session
+    } else if (!cs && m->ClientID.size() == 0) {
+        sendMessage(new ConnackMessage(false, CONNECT_IDENTIFIER_REJECTED));
+        return CLEANSESSION_MUST_BE_TRUE;
+    }
+
+    bool sessionPresent = bc != broker->clients.end();
+    if (cs || !sessionPresent) {
+        // set torelant Duration
+        if (m->ClientID.size() == 0) {
+            m->ClientID = broker->ApplyDummyClientID();
+        }
+        ID = m->ClientID;
+        user = m->user;
+        will = m->will;
+        keepAlive = m->KeepAlive;
+        cleanSession = cs;
+        sessionPresent = false;
+    }
+    broker->clients[m->ClientID] = this;
+
+    if ((ConnectFlag)(m->Flags&WILL_FLAG) == WILL_FLAG) {
+        will = m->will;
+    } else {
+
+    }
+    if (m->KeepAlive != 0) {
+        // start keepalive timer/loop
+    }
+    isConnecting = true;
+    sendMessage(new ConnackMessage(sessionPresent, CONNECT_ACCEPTED));
+    // redelivery
+    return NO_ERROR;
+
+}
 MQTT_ERROR BrokerSideClient::recvConnackMessage(ConnackMessage* m) {return INVALID_MESSAGE_CAME;}
 MQTT_ERROR BrokerSideClient::recvPublishMessage(PublishMessage* m) {
     if (m->fh->Dup) {
