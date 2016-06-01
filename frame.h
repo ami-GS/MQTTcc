@@ -68,17 +68,17 @@ enum ConnectReturnCode {
 };
 
 struct Will {
-    Will(std::string topic, std::string message, bool retain, uint8_t qos) : Topic(topic), Message(message), Retain(retain), QoS(qos) {};
-    std::string Topic;
-    std::string Message;
-    bool Retain;
-    uint8_t QoS;
+    Will(std::string topic, std::string message, bool retain, uint8_t qos) : topic(topic), message(message), retain(retain), qos(qos) {};
+    std::string topic;
+    std::string message;
+    bool retain;
+    uint8_t qos;
 };
 
 struct User {
-    User(std::string name, std::string pass) : Name(name), Passwd(pass) {};
-    std::string Name;
-    std::string Passwd;
+    User(std::string name, std::string pass) : name(name), passwd(pass) {};
+    std::string name;
+    std::string passwd;
 };
 
 const static struct MQTT_VERSION {
@@ -88,17 +88,17 @@ const static struct MQTT_VERSION {
 
 class FixedHeader {
 public:
-    MessageType Type;
-    bool Dup;
-    bool Retain;
-    uint8_t QoS;
-    uint32_t Length;
-    uint16_t PacketID;
+    MessageType type;
+    bool dup;
+    bool retain;
+    uint8_t qos;
+    uint32_t length;
+    uint16_t packetID;
     FixedHeader(MessageType type, bool dup, uint8_t qos, bool retain, uint32_t length, uint16_t id);
     FixedHeader() {};
     ~FixedHeader() {};
-    int64_t GetWire(uint8_t* wire);
-    std::string String();
+    int64_t getWire(uint8_t* wire);
+    std::string getString();
     int64_t parseHeader(const uint8_t* wire, MQTT_ERROR& err);
 };
 
@@ -107,40 +107,40 @@ public:
     FixedHeader* fh;
     Message(FixedHeader* fh);
     virtual ~Message();
-    virtual int64_t GetWire(uint8_t* wire) = 0;
-    virtual std::string String() = 0;
+    virtual int64_t getWire(uint8_t* wire) = 0;
+    virtual std::string getString() = 0;
     virtual int64_t parse(const uint8_t* wire, MQTT_ERROR& err) = 0;
 };
 
 class ConnectMessage : public Message {
 public:
-    uint8_t Flags;
-    uint16_t KeepAlive;
-    std::string ClientID;
-    bool CleanSession;
+    uint8_t flags;
+    uint16_t keepAlive;
+    std::string clientID;
+    bool cleanSession;
     const Will* will;
     const User* user;
-    struct MQTT_VERSION Protocol;
+    struct MQTT_VERSION protocol;
 
     ConnectMessage(uint16_t keepAlive, std::string id, bool cleanSession, const struct Will* will, const struct User* user);
     ConnectMessage(FixedHeader* fh) : Message(fh) {};
     ~ConnectMessage();
-    int64_t GetWire(uint8_t* wire);
-    std::string FlagString();
-    std::string String();
+    int64_t getWire(uint8_t* wire);
+    std::string flagString();
+    std::string getString();
     int64_t parse(const uint8_t* wire, MQTT_ERROR& err);
 };
 
 
 class ConnackMessage : public Message {
 public:
-    bool SessionPresent;
-    ConnectReturnCode ReturnCode;
+    bool sessionPresent;
+    ConnectReturnCode returnCode;
     ConnackMessage(bool sp, ConnectReturnCode code);
     ConnackMessage(FixedHeader* fh) : Message(fh) {};
     ~ConnackMessage() {};
-    int64_t GetWire(uint8_t* wire);
-    std::string String();
+    int64_t getWire(uint8_t* wire);
+    std::string getString();
     int64_t parse(const uint8_t* wire, MQTT_ERROR& err);
 };
 
@@ -152,8 +152,8 @@ public:
     PublishMessage(bool dup, uint8_t qos, bool retain, uint16_t id, std::string topic, std::string payload);
     PublishMessage(FixedHeader* fh) : Message(fh) {};
     ~PublishMessage() {};
-    int64_t GetWire(uint8_t* wire);
-    std::string String();
+    int64_t getWire(uint8_t* wire);
+    std::string getString();
     int64_t parse(const uint8_t* wire, MQTT_ERROR& err);
 };
 
@@ -162,8 +162,8 @@ public:
     PubackMessage(uint16_t id);
     PubackMessage(FixedHeader* fh) : Message(fh) {};
     ~PubackMessage() {};
-    int64_t GetWire(uint8_t* wire);
-    std::string String();
+    int64_t getWire(uint8_t* wire);
+    std::string getString();
     int64_t parse(const uint8_t* wire, MQTT_ERROR& err);
 };
 
@@ -173,8 +173,8 @@ public:
     PubrecMessage(uint16_t id);
     PubrecMessage(FixedHeader* fh) : Message(fh) {};
     ~PubrecMessage() {};
-    int64_t GetWire(uint8_t* wire);
-    std::string String();
+    int64_t getWire(uint8_t* wire);
+    std::string getString();
     int64_t parse(const uint8_t* wire, MQTT_ERROR& err);
 };
 
@@ -183,8 +183,8 @@ public:
     PubrelMessage(uint16_t id);
     PubrelMessage(FixedHeader* fh) : Message(fh) {};
     ~PubrelMessage() {};
-    int64_t GetWire(uint8_t* wire);
-    std::string String();
+    int64_t getWire(uint8_t* wire);
+    std::string getString();
     int64_t parse(const uint8_t* wire, MQTT_ERROR& err);
 };
 
@@ -193,8 +193,8 @@ public:
     PubcompMessage(uint16_t id);
     PubcompMessage(FixedHeader* fh) : Message(fh) {};
     ~PubcompMessage() {};
-    int64_t GetWire(uint8_t* wire);
-    std::string String();
+    int64_t getWire(uint8_t* wire);
+    std::string getString();
     int64_t parse(const uint8_t* wire, MQTT_ERROR& err);
 };
 
@@ -211,8 +211,8 @@ public:
     SubscribeMessage(uint16_t id, std::vector<SubscribeTopic*> topics);
     SubscribeMessage(FixedHeader* fh) : Message(fh) {};
     ~SubscribeMessage();
-    int64_t GetWire(uint8_t* wire);
-    std::string String();
+    int64_t getWire(uint8_t* wire);
+    std::string getString();
     int64_t parse(const uint8_t* wire, MQTT_ERROR& err);
 };
 
@@ -233,8 +233,8 @@ public:
     SubackMessage(FixedHeader* fh) : Message(fh) {};
     ~SubackMessage() {};
 
-    int64_t GetWire(uint8_t* wire);
-    std::string String();
+    int64_t getWire(uint8_t* wire);
+    std::string getString();
     int64_t parse(const uint8_t* wire, MQTT_ERROR& err);
 };
 
@@ -246,8 +246,8 @@ public:
     UnsubscribeMessage(FixedHeader* fh) : Message(fh) {};
     ~UnsubscribeMessage() {};
 
-    int64_t GetWire(uint8_t* wire);
-    std::string String();
+    int64_t getWire(uint8_t* wire);
+    std::string getString();
     int64_t parse(const uint8_t* wire, MQTT_ERROR& err);
 };
 
@@ -257,8 +257,8 @@ public:
     UnsubackMessage(FixedHeader* fh) : Message(fh) {};
     ~UnsubackMessage() {};
 
-    int64_t GetWire(uint8_t* wire);
-    std::string String();
+    int64_t getWire(uint8_t* wire);
+    std::string getString();
     int64_t parse(const uint8_t* wire, MQTT_ERROR& err);
 };
 
@@ -268,8 +268,8 @@ public:
     PingreqMessage(FixedHeader* fh) : Message(fh) {};
     ~PingreqMessage() {};
 
-    int64_t GetWire(uint8_t* wire);
-    std::string String();
+    int64_t getWire(uint8_t* wire);
+    std::string getString();
     int64_t parse(const uint8_t* wire, MQTT_ERROR& err);
 };
 
@@ -279,8 +279,8 @@ public:
     PingrespMessage(FixedHeader* fh) : Message(fh) {};
     ~PingrespMessage() {};
 
-    int64_t GetWire(uint8_t* wire);
-    std::string String();
+    int64_t getWire(uint8_t* wire);
+    std::string getString();
     int64_t parse(const uint8_t* wire, MQTT_ERROR& err);
 };
 
@@ -290,8 +290,8 @@ public:
     DisconnectMessage(FixedHeader* fh) : Message(fh) {};
     ~DisconnectMessage() {};
 
-    int64_t GetWire(uint8_t* wire);
-    std::string String();
+    int64_t getWire(uint8_t* wire);
+    std::string getString();
     int64_t parse(const uint8_t* wire, MQTT_ERROR& err);
 };
 

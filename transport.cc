@@ -25,7 +25,7 @@ Transport::Transport(const std::string targetIP, const int targetPort) {
 }
 
 int64_t Transport::sendMessage(Message* m) {
-    uint64_t len = m->GetWire(writeBuff);
+    uint64_t len = m->getWire(writeBuff);
     if (len == -1) {
         return -1;
     }

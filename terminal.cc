@@ -29,17 +29,17 @@ MQTT_ERROR Terminal::sendMessage(Message* m) {
     if (!isConnecting) {
         return NOT_CONNECTED;
     }
-    uint16_t packetID = m->fh->PacketID;
+    uint16_t packetID = m->fh->packetID;
     if (packetIDMap.find(packetID) != packetIDMap.end()) {
         return PACKET_ID_IS_USED_ALREADY;
     }
     int64_t len = ct->sendMessage(m);
     if (len != -1) {
-        if (m->fh->Type == PUBLISH_MESSAGE_TYPE) {
+        if (m->fh->type == PUBLISH_MESSAGE_TYPE) {
             if (packetID > 0) {
                 packetIDMap[packetID] = m;
             }
-        } else if (m->fh->Type == PUBREC_MESSAGE_TYPE || m->fh->Type == SUBSCRIBE_MESSAGE_TYPE || m->fh->Type == UNSUBSCRIBE_MESSAGE_TYPE || m->fh->Type == PUBREL_MESSAGE_TYPE) {
+        } else if (m->fh->type == PUBREC_MESSAGE_TYPE || m->fh->type == SUBSCRIBE_MESSAGE_TYPE || m->fh->type == UNSUBSCRIBE_MESSAGE_TYPE || m->fh->type == PUBREL_MESSAGE_TYPE) {
             if (packetID == 0) {
                 return PACKET_ID_SHOULD_NOT_BE_ZERO;
             }
@@ -83,7 +83,7 @@ MQTT_ERROR readLoop(Terminal* c) {
             FixedHeader* fh = new FixedHeader();
             int len = fh->parseHeader(c->ct->readBuff, err);
             // TODO include 'm->parse' methods into constructor
-            switch (fh->Type) {
+            switch (fh->type) {
             case CONNECT_MESSAGE_TYPE:
             {
                 ConnectMessage* m = new ConnectMessage(fh);

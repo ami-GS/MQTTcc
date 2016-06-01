@@ -86,7 +86,7 @@ MQTT_ERROR Client::disconnect() {
 MQTT_ERROR Client::recvConnectMessage(ConnectMessage* m) {return INVALID_MESSAGE_CAME;}
 
 MQTT_ERROR Client::recvConnackMessage(ConnackMessage* m) {
-    if (m->ReturnCode != CONNECT_ACCEPTED) {
+    if (m->returnCode != CONNECT_ACCEPTED) {
         //return m->ReturnCode;
     }
 
@@ -100,68 +100,68 @@ MQTT_ERROR Client::recvConnackMessage(ConnackMessage* m) {
 
 
 MQTT_ERROR Client::recvPublishMessage(PublishMessage* m) {
-    if (m->fh->Dup) {
+    if (m->fh->dup) {
         // re-delivered;
     } else {
         // first time delivery
     }
 
-    if (m->fh->Retain) {
+    if (m->fh->retain) {
         // retained Message
     }
 
-    switch (m->fh->QoS) {
+    switch (m->fh->qos) {
     case 0:
-        if (m->fh->PacketID != 0) {
+        if (m->fh->packetID != 0) {
             return PACKET_ID_SHOULD_BE_ZERO; // packet id should be zero
         }
     case 1:
-        return sendMessage(new PubackMessage(m->fh->PacketID));
+        return sendMessage(new PubackMessage(m->fh->packetID));
     case 2:
-        return sendMessage(new PubrecMessage(m->fh->PacketID));
+        return sendMessage(new PubrecMessage(m->fh->packetID));
     }
     return NO_ERROR;
 }
 
 
 MQTT_ERROR Client::recvPubackMessage(PubackMessage* m) {
-    if (m->fh->PacketID > 0) {
-        return ackMessage(m->fh->PacketID);
+    if (m->fh->packetID > 0) {
+        return ackMessage(m->fh->packetID);
     }
     return NO_ERROR;
 }
 
 MQTT_ERROR Client::recvPubrecMessage(PubrecMessage* m) {
-    MQTT_ERROR err = ackMessage(m->fh->PacketID);
+    MQTT_ERROR err = ackMessage(m->fh->packetID);
     if (err < 0) {
         return err;
     }
-    err = sendMessage(new PubrelMessage(m->fh->PacketID));
+    err = sendMessage(new PubrelMessage(m->fh->packetID));
     return err;
 }
 MQTT_ERROR Client::recvPubrelMessage(PubrelMessage* m) {
-    MQTT_ERROR err = ackMessage(m->fh->PacketID);
+    MQTT_ERROR err = ackMessage(m->fh->packetID);
     if (err < 0) {
         return err;
     }
-    err = sendMessage(new PubcompMessage(m->fh->PacketID));
+    err = sendMessage(new PubcompMessage(m->fh->packetID));
     return err;
 }
 
 MQTT_ERROR Client::recvPubcompMessage(PubcompMessage* m) {
-    return ackMessage(m->fh->PacketID);
+    return ackMessage(m->fh->packetID);
 }
 
 MQTT_ERROR Client::recvSubscribeMessage(SubscribeMessage* m) {return INVALID_MESSAGE_CAME;}
 
 MQTT_ERROR Client::recvSubackMessage(SubackMessage* m) {
-    return ackMessage(m->fh->PacketID);
+    return ackMessage(m->fh->packetID);
 }
 
 MQTT_ERROR Client::recvUnsubscribeMessage(UnsubscribeMessage* m) {return INVALID_MESSAGE_CAME;}
 
 MQTT_ERROR Client::recvUnsubackMessage(UnsubackMessage* m) {
-    return ackMessage(m->fh->PacketID);
+    return ackMessage(m->fh->packetID);
 }
 
 MQTT_ERROR Client::recvPingreqMessage(PingreqMessage* m) {return INVALID_MESSAGE_CAME;}
