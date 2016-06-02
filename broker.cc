@@ -74,6 +74,7 @@ void BrokerSideClient::setPreviousSession(BrokerSideClient* ps) {
 }
 
 MQTT_ERROR BrokerSideClient::recvConnectMessage(ConnectMessage* m) {
+    MQTT_ERROR err = NO_ERROR;
     if (m->protocol.name != MQTT_3_1_1.name) {
         return INVALID_PROTOCOL_NAME;
     }
@@ -88,7 +89,7 @@ MQTT_ERROR BrokerSideClient::recvConnectMessage(ConnectMessage* m) {
     }
     bool cs = (ConnectFlag)(m->flags&CLEANSESSION_FLAG) == CLEANSESSION_FLAG;
     if (bc != broker->clients.end() && !cleanSession) {
-        // set previous session
+        setPreviousSession(bc->second);
     } else if (!cs && m->clientID.size() == 0) {
         sendMessage(new ConnackMessage(false, CONNECT_IDENTIFIER_REJECTED));
         return CLEANSESSION_MUST_BE_TRUE;
@@ -118,9 +119,9 @@ MQTT_ERROR BrokerSideClient::recvConnectMessage(ConnectMessage* m) {
         // start keepalive timer/loop
     }
     isConnecting = true;
-    sendMessage(new ConnackMessage(sessionPresent, CONNECT_ACCEPTED));
-    // redelivery
-    return NO_ERROR;
+    err = sendMessage(new ConnackMessage(sessionPresent, CONNECT_ACCEPTED));
+    err = redelivery();
+    return err;
 
 }
 MQTT_ERROR BrokerSideClient::recvConnackMessage(ConnackMessage* m) {return INVALID_MESSAGE_CAME;}
