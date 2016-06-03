@@ -64,6 +64,35 @@ BrokerSideClient::BrokerSideClient(Transport* ct, Broker* b) : broker(b), Termin
 
 BrokerSideClient::~BrokerSideClient() {}
 
+MQTT_ERROR  BrokerSideClient::disconnectProcessing() {
+    MQTT_ERROR err = NO_ERROR;
+    if (will != NULL) {
+        if (will->retain) {
+            broker->topicRoot->applyRetain(will->topic, will->qos, will->message, err);
+            if (err != NO_ERROR) {
+                return err;
+                }
+        }
+        std::vector<TopicNode*> nodes = broker->topicRoot->getTopicNode(will->topic, true, err);
+        if (err != NO_ERROR) {
+            return err;
+        }
+
+        for (std::map<std::string, uint8_t>::iterator it = nodes[0]->subscribers.begin(); it != nodes[0]->subscribers.end(); it++) {
+            BrokerSideClient* subscriber = broker->clients[it->first];
+            broker->checkQoSAndPublish(subscriber, will->qos, it->second, will->retain, will->topic, will->message);
+        }
+    }
+    if (isConnecting) {
+        // stop keepalive timer
+        if (cleanSession) {
+            delete broker->clients[ID];
+        }
+    }
+    err = disconnectBase();
+    return err;
+}
+
 void BrokerSideClient::setPreviousSession(BrokerSideClient* ps) {
     subTopics = ps->subTopics;
     packetIDMap = ps->packetIDMap;

@@ -26,6 +26,7 @@ private:
 public:
     BrokerSideClient(Transport* ct, Broker* broker);
     ~BrokerSideClient();
+    MQTT_ERROR disconnectProcessing();
     void setPreviousSession(BrokerSideClient* ps);
     MQTT_ERROR recvConnectMessage(ConnectMessage* m);
     MQTT_ERROR recvConnackMessage(ConnackMessage* m);

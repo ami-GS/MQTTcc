@@ -75,6 +75,15 @@ MQTT_ERROR Terminal::getUsablePacketID(uint16_t* id) {
     return NO_ERROR;
 }
 
+MQTT_ERROR Terminal::disconnectBase() {
+    if (isConnecting) {
+        isConnecting = false;
+        will = NULL;
+    }
+    close(ct->sock);
+    return NO_ERROR;
+}
+
 MQTT_ERROR readLoop(Terminal* c) {
     MQTT_ERROR err = NO_ERROR;
     while (true) {
