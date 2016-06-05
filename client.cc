@@ -8,8 +8,9 @@ Client::Client(const std::string id, const User* user, uint16_t keepAlive, const
 Client::~Client() {}
 
 MQTT_ERROR Client::connect(const std::string addr, int port, bool cs) {
-    if (ID.size() == 0 && !cleanSession) {
+    if (this->ID.size() == 0 && !cs) {
         return CLEANSESSION_MUST_BE_TRUE;
+        cs = true;
     }
 
     ct = new Transport(addr, port);
