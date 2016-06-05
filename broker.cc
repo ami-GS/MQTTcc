@@ -5,11 +5,11 @@
 #include <sys/socket.h>
 
 Broker::Broker() {
-    topicRoot = new TopicNode("", "");
+    this->topicRoot = new TopicNode("", "");
 }
 
 Broker::~Broker() {
-    delete topicRoot;
+    delete this->topicRoot;
 }
 
 MQTT_ERROR Broker::Start() {
@@ -53,7 +53,7 @@ MQTT_ERROR Broker::checkQoSAndPublish(BrokerSideClient* requestClient, uint8_t p
 
 std::string Broker::ApplyDummyClientID() {
     std::stringstream ss;
-    ss << "DummyClientID" << clients.size() + 1;
+    ss << "DummyClientID" << this->clients.size() + 1;
     return ss.str();
 }
 
@@ -66,40 +66,40 @@ BrokerSideClient::~BrokerSideClient() {}
 
 MQTT_ERROR  BrokerSideClient::disconnectProcessing() {
     MQTT_ERROR err = NO_ERROR;
-    if (will != NULL) {
-        if (will->retain) {
-            broker->topicRoot->applyRetain(will->topic, will->qos, will->message, err);
+    if (this->will != NULL) {
+        if (this->will->retain) {
+            this->broker->topicRoot->applyRetain(will->topic, will->qos, will->message, err);
             if (err != NO_ERROR) {
                 return err;
                 }
         }
-        std::vector<TopicNode*> nodes = broker->topicRoot->getTopicNode(will->topic, true, err);
+        std::vector<TopicNode*> nodes = this->broker->topicRoot->getTopicNode(will->topic, true, err);
         if (err != NO_ERROR) {
             return err;
         }
 
         for (std::map<std::string, uint8_t>::iterator it = nodes[0]->subscribers.begin(); it != nodes[0]->subscribers.end(); it++) {
             BrokerSideClient* subscriber = broker->clients[it->first];
-            broker->checkQoSAndPublish(subscriber, will->qos, it->second, will->retain, will->topic, will->message);
+            this->broker->checkQoSAndPublish(subscriber, this->will->qos, it->second, this->will->retain, this->will->topic, this->will->message);
         }
     }
-    if (isConnecting) {
+    if (this->isConnecting) {
         // stop keepalive timer
-        if (cleanSession) {
-            delete broker->clients[ID];
+        if (this->cleanSession) {
+            delete this->broker->clients[ID];
         }
     }
-    err = disconnectBase();
+    err = this->disconnectBase();
     return err;
 }
 
 void BrokerSideClient::setPreviousSession(BrokerSideClient* ps) {
-    subTopics = ps->subTopics;
-    packetIDMap = ps->packetIDMap;
-    cleanSession = ps->cleanSession;
-    will = ps->will;
-    user = ps->user;
-    keepAlive = ps->keepAlive;
+    this->subTopics = ps->subTopics;
+    this->packetIDMap = ps->packetIDMap;
+    this->cleanSession = ps->cleanSession;
+    this->will = ps->will;
+    this->user = ps->user;
+    this->keepAlive = ps->keepAlive;
 }
 
 MQTT_ERROR BrokerSideClient::recvConnectMessage(ConnectMessage* m) {
@@ -108,48 +108,48 @@ MQTT_ERROR BrokerSideClient::recvConnectMessage(ConnectMessage* m) {
         return INVALID_PROTOCOL_NAME;
     }
     if (m->protocol.level != MQTT_3_1_1.level) {
-        sendMessage(new ConnackMessage(false, CONNECT_UNNACCEPTABLE_PROTOCOL_VERSION));
+        this->sendMessage(new ConnackMessage(false, CONNECT_UNNACCEPTABLE_PROTOCOL_VERSION));
         return INVALID_PROTOCOL_NAME;
     }
-    std::map<std::string, BrokerSideClient*>::iterator bc = broker->clients.find(m->clientID);
-    if (bc != broker->clients.end() && bc->second->isConnecting) {
-        sendMessage(new ConnackMessage(false, CONNECT_IDENTIFIER_REJECTED));
+    std::map<std::string, BrokerSideClient*>::iterator bc = this->broker->clients.find(m->clientID);
+    if (bc != this->broker->clients.end() && bc->second->isConnecting) {
+        this->sendMessage(new ConnackMessage(false, CONNECT_IDENTIFIER_REJECTED));
         return CLIENT_ID_IS_USED_ALREADY;
     }
     bool cs = (ConnectFlag)(m->flags&CLEANSESSION_FLAG) == CLEANSESSION_FLAG;
-    if (bc != broker->clients.end() && !cleanSession) {
-        setPreviousSession(bc->second);
+    if (bc != this->broker->clients.end() && !this->cleanSession) {
+        this->setPreviousSession(bc->second);
     } else if (!cs && m->clientID.size() == 0) {
-        sendMessage(new ConnackMessage(false, CONNECT_IDENTIFIER_REJECTED));
+        this->sendMessage(new ConnackMessage(false, CONNECT_IDENTIFIER_REJECTED));
         return CLEANSESSION_MUST_BE_TRUE;
     }
 
-    bool sessionPresent = bc != broker->clients.end();
+    bool sessionPresent = bc != this->broker->clients.end();
     if (cs || !sessionPresent) {
         // set torelant Duration
         if (m->clientID.size() == 0) {
-            m->clientID = broker->ApplyDummyClientID();
+            m->clientID = this->broker->ApplyDummyClientID();
         }
-        ID = m->clientID;
-        user = m->user;
-        will = m->will;
-        keepAlive = m->keepAlive;
-        cleanSession = cs;
+        this->ID = m->clientID;
+        this->user = m->user;
+        this->will = m->will;
+        this->keepAlive = m->keepAlive;
+        this->cleanSession = cs;
         sessionPresent = false;
     }
-    broker->clients[m->clientID] = this;
+    this->broker->clients[m->clientID] = this;
 
     if ((ConnectFlag)(m->flags&WILL_FLAG) == WILL_FLAG) {
-        will = m->will;
+        this->will = m->will;
     } else {
 
     }
     if (m->keepAlive != 0) {
         // start keepalive timer/loop
     }
-    isConnecting = true;
-    err = sendMessage(new ConnackMessage(sessionPresent, CONNECT_ACCEPTED));
-    err = redelivery();
+    this->isConnecting = true;
+    err = this->sendMessage(new ConnackMessage(sessionPresent, CONNECT_ACCEPTED));
+    err = this->redelivery();
     return err;
 
 }
@@ -167,7 +167,7 @@ MQTT_ERROR BrokerSideClient::recvPublishMessage(PublishMessage* m) {
         if (m->fh->qos == 0 && data.size() > 0) {
             data = "";
         }
-        broker->topicRoot->applyRetain(m->topicName, m->fh->qos, data, err);
+        this->broker->topicRoot->applyRetain(m->topicName, m->fh->qos, data, err);
         if (err != NO_ERROR) {
             return err;
         }
@@ -182,8 +182,8 @@ MQTT_ERROR BrokerSideClient::recvPublishMessage(PublishMessage* m) {
         if (nodes[0]->subscribers.find(it->first) == nodes[0]->subscribers.end()) {
             continue;
         }
-        BrokerSideClient* subscriber = broker->clients[it->first];
-        err = broker->checkQoSAndPublish(subscriber, m->fh->qos, it->second, false, m->topicName, m->payload);
+        BrokerSideClient* subscriber = this->broker->clients[it->first];
+        err = this->broker->checkQoSAndPublish(subscriber, m->fh->qos, it->second, false, m->topicName, m->payload);
         }
 
     switch (m->fh->qos) {
@@ -192,9 +192,9 @@ MQTT_ERROR BrokerSideClient::recvPublishMessage(PublishMessage* m) {
             return PACKET_ID_SHOULD_BE_ZERO;
         }
     case 1:
-        sendMessage(new PubackMessage(m->fh->packetID));
+        this->sendMessage(new PubackMessage(m->fh->packetID));
     case 2:
-        sendMessage(new PubrecMessage(m->fh->packetID));
+        this->sendMessage(new PubrecMessage(m->fh->packetID));
     }
 
     return err;
@@ -204,31 +204,31 @@ MQTT_ERROR BrokerSideClient::recvPublishMessage(PublishMessage* m) {
 
 MQTT_ERROR BrokerSideClient::recvPubackMessage(PubackMessage* m) {
     if (m->fh->packetID > 0) {
-        return ackMessage(m->fh->packetID);
+        return this->ackMessage(m->fh->packetID);
     }
     return NO_ERROR;
 }
 
 MQTT_ERROR BrokerSideClient::recvPubrecMessage(PubrecMessage* m) {
-    MQTT_ERROR err = ackMessage(m->fh->packetID);
+    MQTT_ERROR err = this->ackMessage(m->fh->packetID);
     if (err < 0) {
         return err;
     }
-    err = sendMessage(new PubrelMessage(m->fh->packetID));
+    err = this->sendMessage(new PubrelMessage(m->fh->packetID));
     return err;
 }
 
 MQTT_ERROR BrokerSideClient::recvPubrelMessage(PubrelMessage* m) {
-    MQTT_ERROR err = ackMessage(m->fh->packetID);
+    MQTT_ERROR err = this->ackMessage(m->fh->packetID);
     if (err < 0) {
         return err;
     }
-    err = sendMessage(new PubcompMessage(m->fh->packetID));
+    err = this->sendMessage(new PubcompMessage(m->fh->packetID));
     return err;
 }
 
 MQTT_ERROR BrokerSideClient::recvPubcompMessage(PubcompMessage* m) {
-    return ackMessage(m->fh->packetID);
+    return this->ackMessage(m->fh->packetID);
 }
 
 
@@ -237,7 +237,7 @@ MQTT_ERROR BrokerSideClient::recvSubscribeMessage(SubscribeMessage* m) {
 
     MQTT_ERROR err; // this sould be duplicate?
     for (std::vector<SubscribeTopic*>::iterator it = m->subTopics.begin(); it != m->subTopics.end(); it++) {
-        std::vector<TopicNode*> nodes = broker->topicRoot->getTopicNode((*it)->topic, true, err);
+        std::vector<TopicNode*> nodes = this->broker->topicRoot->getTopicNode((*it)->topic, true, err);
         SubackCode code = (SubackCode)(*it)->qos;
 
         if (err != NO_ERROR) {
@@ -245,7 +245,7 @@ MQTT_ERROR BrokerSideClient::recvSubscribeMessage(SubscribeMessage* m) {
         } else {
             for (std::vector<TopicNode*>::iterator nIt = nodes.begin(); nIt != nodes.end(); nIt++) {
                 (*nIt)->subscribers[ID] = (*it)->qos;
-                subTopics[(*it)->topic] = (*it)->qos;
+                this->subTopics[(*it)->topic] = (*it)->qos;
                 if ((*nIt)->retainMessage.size() > 0) {
                     err = this->broker->checkQoSAndPublish(this, (*nIt)->retainQoS, (*it)->qos, true, (*nIt)->fullPath,(*nIt)->retainMessage);
                     if (err != NO_ERROR) {
@@ -256,7 +256,7 @@ MQTT_ERROR BrokerSideClient::recvSubscribeMessage(SubscribeMessage* m) {
         }
         returnCodes.push_back(code);
     }
-    return sendMessage(new SubackMessage(m->fh->packetID, returnCodes));
+    return this->sendMessage(new SubackMessage(m->fh->packetID, returnCodes));
 }
 
 
@@ -283,6 +283,6 @@ MQTT_ERROR BrokerSideClient::recvPingrespMessage(PingrespMessage* m) {return INV
 
 MQTT_ERROR BrokerSideClient::recvDisconnectMessage(DisconnectMessage* m) {
     will = NULL;
-    MQTT_ERROR err = disconnectProcessing();
+    MQTT_ERROR err = this->disconnectProcessing();
     return err;
 }

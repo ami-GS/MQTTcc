@@ -13,9 +13,9 @@ MQTT_ERROR Client::connect(const std::string addr, int port, bool cs) {
         cs = true;
     }
 
-    ct = new Transport(addr, port);
-    cleanSession = cs;
-    int64_t len = ct->sendMessage(new ConnectMessage(keepAlive, ID, cleanSession, will, user));
+    this->ct = new Transport(addr, port);
+    this->cleanSession = cs;
+    int64_t len = this->ct->sendMessage(new ConnectMessage(keepAlive, ID, cleanSession, will, user));
     if (len == -1) {
         //return ; // TODO: transport error?
     }
@@ -38,7 +38,7 @@ MQTT_ERROR Client::publish(const std::string topic, const std::string data, uint
             return err;
         }
     }
-    return sendMessage(new PublishMessage(false, qos, retain, id, topic, data));
+    return this->sendMessage(new PublishMessage(false, qos, retain, id, topic, data));
 }
 
 MQTT_ERROR Client::subscribe(std::vector<SubscribeTopic*> topics) {
@@ -57,7 +57,7 @@ MQTT_ERROR Client::subscribe(std::vector<SubscribeTopic*> topics) {
             } // has suffix of '#' and '+'
         }
     }
-    return sendMessage(new SubscribeMessage(id, topics));
+    return this->sendMessage(new SubscribeMessage(id, topics));
 }
 
 MQTT_ERROR Client::unsubscribe(std::vector<std::string> topics) {
@@ -72,16 +72,16 @@ MQTT_ERROR Client::unsubscribe(std::vector<std::string> topics) {
         }
     }
     uint16_t id = 0;
-    MQTT_ERROR err = getUsablePacketID(&id);
+    MQTT_ERROR err = this->getUsablePacketID(&id);
     if (err != NO_ERROR) {
         return err;
     }
-    return sendMessage(new UnsubscribeMessage(id, topics));
+    return this->sendMessage(new UnsubscribeMessage(id, topics));
 }
 
 MQTT_ERROR Client::disconnect() {
     //TODO: add more detail
-    return sendMessage(new DisconnectMessage());
+    return this->sendMessage(new DisconnectMessage());
 }
 
 MQTT_ERROR Client::recvConnectMessage(ConnectMessage* m) {return INVALID_MESSAGE_CAME;}
@@ -91,12 +91,12 @@ MQTT_ERROR Client::recvConnackMessage(ConnackMessage* m) {
         //return m->ReturnCode;
     }
 
-    isConnecting = true;
-    if (keepAlive != 0) {
+    this->isConnecting = true;
+    if (this->keepAlive != 0) {
         // start ping loop
     }
 
-    return redelivery();
+    return this->redelivery();
 }
 
 
@@ -117,9 +117,9 @@ MQTT_ERROR Client::recvPublishMessage(PublishMessage* m) {
             return PACKET_ID_SHOULD_BE_ZERO; // packet id should be zero
         }
     case 1:
-        return sendMessage(new PubackMessage(m->fh->packetID));
+        return this->sendMessage(new PubackMessage(m->fh->packetID));
     case 2:
-        return sendMessage(new PubrecMessage(m->fh->packetID));
+        return this->sendMessage(new PubrecMessage(m->fh->packetID));
     }
     return NO_ERROR;
 }
@@ -127,42 +127,42 @@ MQTT_ERROR Client::recvPublishMessage(PublishMessage* m) {
 
 MQTT_ERROR Client::recvPubackMessage(PubackMessage* m) {
     if (m->fh->packetID > 0) {
-        return ackMessage(m->fh->packetID);
+        return this->ackMessage(m->fh->packetID);
     }
     return NO_ERROR;
 }
 
 MQTT_ERROR Client::recvPubrecMessage(PubrecMessage* m) {
-    MQTT_ERROR err = ackMessage(m->fh->packetID);
+    MQTT_ERROR err = this->ackMessage(m->fh->packetID);
     if (err < 0) {
         return err;
     }
-    err = sendMessage(new PubrelMessage(m->fh->packetID));
+    err = this->sendMessage(new PubrelMessage(m->fh->packetID));
     return err;
 }
 MQTT_ERROR Client::recvPubrelMessage(PubrelMessage* m) {
-    MQTT_ERROR err = ackMessage(m->fh->packetID);
+    MQTT_ERROR err = this->ackMessage(m->fh->packetID);
     if (err < 0) {
         return err;
     }
-    err = sendMessage(new PubcompMessage(m->fh->packetID));
+    err = this->sendMessage(new PubcompMessage(m->fh->packetID));
     return err;
 }
 
 MQTT_ERROR Client::recvPubcompMessage(PubcompMessage* m) {
-    return ackMessage(m->fh->packetID);
+    return this->ackMessage(m->fh->packetID);
 }
 
 MQTT_ERROR Client::recvSubscribeMessage(SubscribeMessage* m) {return INVALID_MESSAGE_CAME;}
 
 MQTT_ERROR Client::recvSubackMessage(SubackMessage* m) {
-    return ackMessage(m->fh->packetID);
+    return this->ackMessage(m->fh->packetID);
 }
 
 MQTT_ERROR Client::recvUnsubscribeMessage(UnsubscribeMessage* m) {return INVALID_MESSAGE_CAME;}
 
 MQTT_ERROR Client::recvUnsubackMessage(UnsubackMessage* m) {
-    return ackMessage(m->fh->packetID);
+    return this->ackMessage(m->fh->packetID);
 }
 
 MQTT_ERROR Client::recvPingreqMessage(PingreqMessage* m) {return INVALID_MESSAGE_CAME;}

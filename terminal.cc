@@ -13,37 +13,37 @@ Terminal::Terminal(const std::string id, const User* u, uint16_t keepAlive, cons
 }
 
 Terminal::~Terminal() {
-    delete user;
-    delete will;
+    delete this->user;
+    delete this->will;
 }
 
 MQTT_ERROR Terminal::ackMessage(uint16_t pID) {
-    if (packetIDMap.find(pID) == packetIDMap.end()) {
+    if (this->packetIDMap.find(pID) == this->packetIDMap.end()) {
         return PACKET_ID_DOES_NOT_EXIST; // packet id does not exist
     }
-    packetIDMap.erase(pID);
+    this->packetIDMap.erase(pID);
     return NO_ERROR;
 }
 
 MQTT_ERROR Terminal::sendMessage(Message* m) {
-    if (!isConnecting) {
+    if (!this->isConnecting) {
         return NOT_CONNECTED;
     }
     uint16_t packetID = m->fh->packetID;
-    if (packetIDMap.find(packetID) != packetIDMap.end()) {
+    if (this->packetIDMap.find(packetID) != this->packetIDMap.end()) {
         return PACKET_ID_IS_USED_ALREADY;
     }
-    int64_t len = ct->sendMessage(m);
+    int64_t len = this->ct->sendMessage(m);
     if (len != -1) {
         if (m->fh->type == PUBLISH_MESSAGE_TYPE) {
             if (packetID > 0) {
-                packetIDMap[packetID] = m;
+                this->packetIDMap[packetID] = m;
             }
         } else if (m->fh->type == PUBREC_MESSAGE_TYPE || m->fh->type == SUBSCRIBE_MESSAGE_TYPE || m->fh->type == UNSUBSCRIBE_MESSAGE_TYPE || m->fh->type == PUBREL_MESSAGE_TYPE) {
             if (packetID == 0) {
                 return PACKET_ID_SHOULD_NOT_BE_ZERO;
             }
-            packetIDMap[packetID] = m;
+            this->packetIDMap[packetID] = m;
         }
     }
     return NO_ERROR;
@@ -51,9 +51,9 @@ MQTT_ERROR Terminal::sendMessage(Message* m) {
 
 MQTT_ERROR Terminal::redelivery() {
     MQTT_ERROR err;
-    if (!cleanSession && packetIDMap.size() > 0) {
-        for (std::map<uint16_t, Message*>::iterator itPair = packetIDMap.begin(); itPair != packetIDMap.end(); itPair++) {
-            err = sendMessage(itPair->second);
+    if (!this->cleanSession && this->packetIDMap.size() > 0) {
+        for (std::map<uint16_t, Message*>::iterator itPair = this->packetIDMap.begin(); itPair != this->packetIDMap.end(); itPair++) {
+            err = this->sendMessage(itPair->second);
             if (err != NO_ERROR) {
                 return err;
             }
@@ -70,17 +70,17 @@ MQTT_ERROR Terminal::getUsablePacketID(uint16_t* id) {
             return FAIL_TO_SET_PACKET_ID;
         }
         *id = randPacketID(mt);
-        exists = !(packetIDMap.find(*id) == packetIDMap.end());
+        exists = !(this->packetIDMap.find(*id) == this->packetIDMap.end());
     }
     return NO_ERROR;
 }
 
 MQTT_ERROR Terminal::disconnectBase() {
-    if (isConnecting) {
-        isConnecting = false;
-        will = NULL;
+    if (this->isConnecting) {
+        this->isConnecting = false;
+        this->will = NULL;
     }
-    close(ct->sock);
+    close(this->ct->sock);
     return NO_ERROR;
 }
 
