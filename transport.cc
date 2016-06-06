@@ -30,7 +30,9 @@ int64_t Transport::sendMessage(Message* m) {
         return -1;
     }
     write(sock, writeBuff, len);
-    delete m; // TODO: this is little fast, need to wait ack
+    if (m->fh->packetID > 0) {
+        delete m;
+    }
     return len;
 }
 

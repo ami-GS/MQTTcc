@@ -21,6 +21,8 @@ MQTT_ERROR Terminal::ackMessage(uint16_t pID) {
     if (this->packetIDMap.find(pID) == this->packetIDMap.end()) {
         return PACKET_ID_DOES_NOT_EXIST; // packet id does not exist
     }
+    Message* m = this->packetIDMap[pID];
+    delete m;
     this->packetIDMap.erase(pID);
     return NO_ERROR;
 }
