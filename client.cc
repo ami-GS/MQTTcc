@@ -25,6 +25,15 @@ MQTT_ERROR Client::connect(const std::string addr, int port, bool cs) {
     return NO_ERROR;
 }
 
+MQTT_ERROR Client::disconnectProcessing() {
+    MQTT_ERROR err = NO_ERROR;
+    if (this->isConnecting) {
+        this->isConnecting = false; // this makes readLoop stop
+    }
+    err = this->disconnectBase();
+    return err;
+}
+
 MQTT_ERROR Client::publish(const std::string topic, const std::string data, uint8_t qos, bool retain) {
     if (qos >= 3) {
         return INVALID_QOS_3;

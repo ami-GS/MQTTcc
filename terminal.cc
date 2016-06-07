@@ -88,7 +88,9 @@ MQTT_ERROR Terminal::disconnectBase() {
 
 MQTT_ERROR readLoop(Terminal* c) {
     MQTT_ERROR err = NO_ERROR;
-    while (true) {
+    bool first = true;
+    while (first || c->isConnecting) {
+        first = false;
         err = c->ct->readMessage();
         if (err == NO_ERROR) {
             FixedHeader* fh = new FixedHeader();
