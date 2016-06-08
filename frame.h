@@ -123,7 +123,7 @@ public:
     struct MQTT_VERSION protocol;
 
     ConnectMessage(uint16_t keepAlive, std::string id, bool cleanSession, const struct Will* will, const struct User* user);
-    ConnectMessage(FixedHeader* fh) : Message(fh) {};
+    ConnectMessage(FixedHeader* fh, const uint8_t* wire, MQTT_ERROR& err) : Message(fh) {this->parse(wire, err);};
     ~ConnectMessage();
     int64_t getWire(uint8_t* wire);
     std::string flagString();
@@ -137,7 +137,7 @@ public:
     bool sessionPresent;
     ConnectReturnCode returnCode;
     ConnackMessage(bool sp, ConnectReturnCode code);
-    ConnackMessage(FixedHeader* fh) : Message(fh) {};
+    ConnackMessage(FixedHeader* fh, const uint8_t* wire, MQTT_ERROR& err) : Message(fh) {this->parse(wire, err);};
     ~ConnackMessage() {};
     int64_t getWire(uint8_t* wire);
     std::string getString();
@@ -150,7 +150,7 @@ public:
     std::string topicName;
     std::string payload;
     PublishMessage(bool dup, uint8_t qos, bool retain, uint16_t id, std::string topic, std::string payload);
-    PublishMessage(FixedHeader* fh) : Message(fh) {};
+    PublishMessage(FixedHeader* fh, const uint8_t* wire, MQTT_ERROR& err) : Message(fh) {this->parse(wire, err);};
     ~PublishMessage() {};
     int64_t getWire(uint8_t* wire);
     std::string getString();
@@ -160,7 +160,7 @@ public:
 class PubackMessage : public Message {
 public:
     PubackMessage(uint16_t id);
-    PubackMessage(FixedHeader* fh) : Message(fh) {};
+    PubackMessage(FixedHeader* fh, const uint8_t* wire, MQTT_ERROR& err) : Message(fh) {this->parse(wire, err);};
     ~PubackMessage() {};
     int64_t getWire(uint8_t* wire);
     std::string getString();
@@ -171,7 +171,7 @@ public:
 class PubrecMessage : public Message {
 public:
     PubrecMessage(uint16_t id);
-    PubrecMessage(FixedHeader* fh) : Message(fh) {};
+    PubrecMessage(FixedHeader* fh, const uint8_t* wire, MQTT_ERROR& err) : Message(fh) {this->parse(wire, err);};
     ~PubrecMessage() {};
     int64_t getWire(uint8_t* wire);
     std::string getString();
@@ -181,7 +181,7 @@ public:
 class PubrelMessage : public Message {
 public:
     PubrelMessage(uint16_t id);
-    PubrelMessage(FixedHeader* fh) : Message(fh) {};
+    PubrelMessage(FixedHeader* fh, const uint8_t* wire, MQTT_ERROR& err) : Message(fh) {this->parse(wire, err);};
     ~PubrelMessage() {};
     int64_t getWire(uint8_t* wire);
     std::string getString();
@@ -191,7 +191,7 @@ public:
 class PubcompMessage : public Message {
 public:
     PubcompMessage(uint16_t id);
-    PubcompMessage(FixedHeader* fh) : Message(fh) {};
+    PubcompMessage(FixedHeader* fh, const uint8_t* wire, MQTT_ERROR& err) : Message(fh) {this->parse(wire, err);};
     ~PubcompMessage() {};
     int64_t getWire(uint8_t* wire);
     std::string getString();
@@ -209,7 +209,7 @@ public:
     std::vector<SubscribeTopic*> subTopics;
     
     SubscribeMessage(uint16_t id, std::vector<SubscribeTopic*> topics);
-    SubscribeMessage(FixedHeader* fh) : Message(fh) {};
+    SubscribeMessage(FixedHeader* fh, const uint8_t* wire, MQTT_ERROR& err) : Message(fh) {this->parse(wire, err);};
     ~SubscribeMessage();
     int64_t getWire(uint8_t* wire);
     std::string getString();
@@ -230,7 +230,7 @@ public:
     std::vector<SubackCode> returnCodes;
     
     SubackMessage(uint16_t id, std::vector<SubackCode> codes);
-    SubackMessage(FixedHeader* fh) : Message(fh) {};
+    SubackMessage(FixedHeader* fh, const uint8_t* wire, MQTT_ERROR& err) : Message(fh) {this->parse(wire, err);};
     ~SubackMessage() {};
 
     int64_t getWire(uint8_t* wire);
@@ -243,7 +243,7 @@ public:
     std::vector<std::string> topics;
 
     UnsubscribeMessage(uint16_t id, std::vector<std::string> topics);
-    UnsubscribeMessage(FixedHeader* fh) : Message(fh) {};
+    UnsubscribeMessage(FixedHeader* fh, const uint8_t* wire, MQTT_ERROR& err) : Message(fh) {this->parse(wire, err);};
     ~UnsubscribeMessage() {};
 
     int64_t getWire(uint8_t* wire);
@@ -254,7 +254,7 @@ public:
 class UnsubackMessage : public Message {
 public:
     UnsubackMessage(uint16_t id);
-    UnsubackMessage(FixedHeader* fh) : Message(fh) {};
+    UnsubackMessage(FixedHeader* fh, const uint8_t* wire, MQTT_ERROR& err) : Message(fh) {this->parse(wire, err);};
     ~UnsubackMessage() {};
 
     int64_t getWire(uint8_t* wire);
@@ -265,7 +265,7 @@ public:
 class PingreqMessage : public Message {
 public:
     PingreqMessage();
-    PingreqMessage(FixedHeader* fh) : Message(fh) {};
+    PingreqMessage(FixedHeader* fh, const uint8_t* wire, MQTT_ERROR& err) : Message(fh) {this->parse(wire, err);};
     ~PingreqMessage() {};
 
     int64_t getWire(uint8_t* wire);
@@ -276,7 +276,7 @@ public:
 class PingrespMessage : public Message {
 public:
     PingrespMessage();
-    PingrespMessage(FixedHeader* fh) : Message(fh) {};
+    PingrespMessage(FixedHeader* fh, const uint8_t* wire, MQTT_ERROR& err) : Message(fh) {this->parse(wire, err);};
     ~PingrespMessage() {};
 
     int64_t getWire(uint8_t* wire);
@@ -287,7 +287,7 @@ public:
 class DisconnectMessage : public Message {
 public:
     DisconnectMessage();
-    DisconnectMessage(FixedHeader* fh) : Message(fh) {};
+    DisconnectMessage(FixedHeader* fh, const uint8_t* wire, MQTT_ERROR& err) : Message(fh) {this->parse(wire, err);};
     ~DisconnectMessage() {};
 
     int64_t getWire(uint8_t* wire);
