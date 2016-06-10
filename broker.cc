@@ -51,10 +51,11 @@ MQTT_ERROR Broker::checkQoSAndPublish(BrokerSideClient* requestClient, uint8_t p
     return err;
 }
 
-std::string Broker::ApplyDummyClientID() {
+void Broker::ApplyDummyClientID(std::string* id) {
     std::stringstream ss;
     ss << "DummyClientID" << this->clients.size() + 1;
-    return ss.str();
+    *id = ss.str();
+    return;
 }
 
 
@@ -128,7 +129,7 @@ MQTT_ERROR BrokerSideClient::recvConnectMessage(ConnectMessage* m) {
     if (cs || !sessionPresent) {
         // set torelant Duration
         if (m->clientID.size() == 0) {
-            m->clientID = this->broker->ApplyDummyClientID();
+            this->broker->ApplyDummyClientID(&(m->clientID));
         }
         this->ID = m->clientID;
         this->user = m->user;

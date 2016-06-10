@@ -16,7 +16,7 @@ public:
     ~Broker();
     MQTT_ERROR Start();
     MQTT_ERROR checkQoSAndPublish(BrokerSideClient* requestClient, uint8_t publisherQoS, uint8_t requestedQoS, bool retain, std::string topic, std::string message);
-    std::string ApplyDummyClientID();
+    void ApplyDummyClientID(std::string* id);
 };
 
 class BrokerSideClient : public Terminal {
