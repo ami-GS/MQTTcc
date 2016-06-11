@@ -150,9 +150,9 @@ int64_t ConnectMessage::getWire(uint8_t* wire) {
 
 int64_t ConnectMessage::parse(const uint8_t* wire, MQTT_ERROR& err) {
     const uint8_t* buf = wire;
-    int64_t len = 0;
+    std::string name;
 
-    std::string name = UTF8_decode(buf, &len);
+    int64_t len = UTF8_decode(buf, &name);
     buf += len;
     uint8_t level = *(buf++);
     if (name != MQTT_3_1_1.name || level != MQTT_3_1_1.level) {
@@ -170,13 +170,15 @@ int64_t ConnectMessage::parse(const uint8_t* wire, MQTT_ERROR& err) {
     }
     this->keepAlive = ((uint16_t)*(buf++) << 8);
     this->keepAlive |= *(buf++);
-    this->clientID = UTF8_decode(buf, &len);
+    len = UTF8_decode(buf, &(this->clientID));
     buf += len;
 
     if ((this->flags & WILL_FLAG) == WILL_FLAG) {
-        std::string wTopic = UTF8_decode(buf, &len);
+        std::string wTopic;
+        len = UTF8_decode(buf, &wTopic);
         buf += len;
-        std::string wMessage = UTF8_decode(buf, &len);
+        std::string wMessage;
+        len = UTF8_decode(buf, &wMessage);
         buf += len;
         bool wRetain = (this->flags & WILL_RETAIN_FLAG) == WILL_RETAIN_FLAG;
         uint8_t wQoS = (uint8_t)((this->flags & WILL_QOS3_FLAG) >> 3);
@@ -186,11 +188,11 @@ int64_t ConnectMessage::parse(const uint8_t* wire, MQTT_ERROR& err) {
     if ((this->flags & USERNAME_FLAG) == USERNAME_FLAG || (this->flags & PASSWORD_FLAG) == PASSWORD_FLAG) {
         std::string name(""), passwd("");
         if ((this->flags & USERNAME_FLAG) == USERNAME_FLAG) {
-            name = UTF8_decode(buf, &len);
+            len = UTF8_decode(buf, &name);
             buf += len;
         }
         if ((this->flags & PASSWORD_FLAG) == PASSWORD_FLAG) {
-            passwd = UTF8_decode(buf, &len);
+            len = UTF8_decode(buf, &passwd);
             buf += len;
         }
         this->user = new struct User(name, passwd);
@@ -293,9 +295,8 @@ int64_t PublishMessage::getWire(uint8_t* wire) {
 
 int64_t PublishMessage::parse(const uint8_t* wire, MQTT_ERROR& err) {
     const uint8_t* buf = wire;
-    int64_t len = 0;
 
-    this->topicName = UTF8_decode(buf, &len);
+    int64_t len = UTF8_decode(buf, &(this->topicName));
     buf += len;
 
     if (this->topicName.find('#') == std::string::npos || this->topicName.find('+') == std::string::npos) {
@@ -467,8 +468,11 @@ int64_t SubscribeMessage::parse(const uint8_t* wire, MQTT_ERROR& err) {
     this->fh->packetID = ((uint16_t)*(buf++) << 8);
     this->fh->packetID |= *(buf++);
 
+    std::string topic;
     for (int i = 0; i < this->fh->length-2;) {
-        std::string topic = UTF8_decode(buf, &len);
+        topic = "";
+        len = UTF8_decode(buf, &topic);
+
         buf += len;
         if (*buf == 3) {
             err = INVALID_QOS_3;
@@ -568,8 +572,11 @@ int64_t UnsubscribeMessage::parse(const uint8_t* wire, MQTT_ERROR& err) {
     int64_t len;
     this->fh->packetID = ((uint16_t)*(buf++) << 8);
     this->fh->packetID |= *(buf++);
+    std::string s;
     for (int i = 0; i < this->fh->length-2; i++) {
-        this->topics.push_back(UTF8_decode(buf, &len));
+        s = "";
+        len = UTF8_decode(buf, &s);
+        this->topics.push_back(s);
         buf += len;
     }
     return buf - wire;

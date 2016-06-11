@@ -12,15 +12,14 @@ int32_t UTF8_encode(uint8_t* wire, std::string s) {
     return (int32_t)(2 + s.size());
 }
 
-std::string UTF8_decode(const uint8_t* wire, int64_t* len) {
-    *len = (uint16_t)*wire << 8;
-    *len |= *(wire+1);
-    std::string s(*len, '0');
-    for (int i = 0; i < *len; i++) {
-        s[i] = *(wire+2+i);
+int64_t UTF8_decode(const uint8_t* wire, std::string* s) {
+    int64_t len = (uint16_t)*wire << 8;
+    len |= *(wire+1);
+    s->resize(len);
+    for (int i = 0; i < len; i++) {
+        (*s)[i] = *(wire+2+i);
     }
-    *len += 2;
-    return s;
+    return len+2;
 }
 
 
