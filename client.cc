@@ -15,7 +15,7 @@ MQTT_ERROR Client::connect(const std::string addr, int port, bool cs) {
 
     this->ct = new Transport(addr, port);
     this->cleanSession = cs;
-    int64_t len = this->ct->sendMessage(new ConnectMessage(keepAlive, ID, cleanSession, will, user));
+    int64_t len = this->ct->sendMessage(new ConnectMessage(this->keepAlive, this->ID, this->cleanSession, this->will, this->user));
     if (len == -1) {
         //return ; // TODO: transport error?
     }
