@@ -17,13 +17,13 @@ public:
     std::string ID;
     const User* user;
     const Will* will;
-    uint16_t keepAlive;
+    uint32_t keepAlive;
     std::map<uint16_t, Message*> packetIDMap;
     std::mt19937 mt;
     std::uniform_int_distribution<> randPacketID;
 public:
     Terminal() {};
-    Terminal(const std::string id, const User* user, uint16_t keepAlive, const Will* will);
+    Terminal(const std::string id, const User* user, uint32_t keepAlive, const Will* will);
     MQTT_ERROR ackMessage(uint16_t pID);
     MQTT_ERROR sendMessage(Message* m);
     MQTT_ERROR redelivery();

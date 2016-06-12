@@ -1,11 +1,18 @@
 #include "client.h"
 #include "util.h"
 #include <thread>
+#include <sys/time.h>
 
 Client::Client(const std::string id, const User* user, uint16_t keepAlive, const Will* will) : Terminal(id, user, keepAlive, will) {
 }
 
 Client::~Client() {}
+
+MQTT_ERROR Client::ping() {
+    this->ct->sendMessage(new PingreqMessage());
+    gettimeofday(&(this->timeOfPing), NULL);
+    return NO_ERROR;
+}
 
 MQTT_ERROR Client::connect(const std::string addr, int port, bool cs) {
     if (this->ID.size() == 0 && !cs) {
@@ -178,6 +185,12 @@ MQTT_ERROR Client::recvPingreqMessage(PingreqMessage* m) {return INVALID_MESSAGE
 
 MQTT_ERROR Client::recvPingrespMessage(PingrespMessage* m) {
     // TODO: implement duration base connection management
+    struct timeval tmp;
+    gettimeofday(&tmp, NULL);
+    if ((tmp.tv_sec - this->timeOfPing.tv_sec)*1000000 + (tmp.tv_usec - this->timeOfPing.tv_usec) >= this->keepAlive) {
+        this->sendMessage(new DisconnectMessage());
+        return SERVER_TIMED_OUT;
+    }
     return NO_ERROR;
 }
 

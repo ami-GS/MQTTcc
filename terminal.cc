@@ -6,7 +6,7 @@
 #include <string.h>
 #include <unistd.h>
 
-Terminal::Terminal(const std::string id, const User* u, uint16_t keepAlive, const Will* w) : isConnecting(false), cleanSession(false), ID(id), user(u), will(w), keepAlive(keepAlive) {
+Terminal::Terminal(const std::string id, const User* u, uint32_t keepAlive, const Will* w) : isConnecting(false), cleanSession(false), ID(id), user(u), will(w), keepAlive(keepAlive*1000000) {
     std::random_device rnd;
     unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
     mt(); // TODO: apply seed

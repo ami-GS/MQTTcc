@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 #include <map>
+#include <sys/time.h>
 #include "frame.h"
 #include "transport.h"
 #include "terminal.h"
@@ -10,8 +11,10 @@
 
 class Client : public Terminal {
 public:
+    struct timeval timeOfPing;
     Client(const std::string id, const User* user, uint16_t keepAlive, const Will* will);
     ~Client();
+    MQTT_ERROR ping();
     MQTT_ERROR connect(const std::string addr, int port, bool cleanSession);
     MQTT_ERROR publish(const std::string topic, const std::string data, uint8_t qos, bool retain);
     MQTT_ERROR subscribe(std::vector<SubscribeTopic*> topics);
