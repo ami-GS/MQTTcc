@@ -3,6 +3,7 @@
 #include <sstream>
 #include <thread>
 #include <sys/socket.h>
+#include "unistd.h"
 
 Broker::Broker() {
     this->topicRoot = new TopicNode("", "");
@@ -94,6 +95,16 @@ MQTT_ERROR  BrokerSideClient::disconnectProcessing() {
     return err;
 }
 
+void expirationTimer(BrokerSideClient* bc, int tID) {
+    usleep(bc->keepAlive);
+    bool gotPing = bc->threads[tID];
+    if (!gotPing) {
+        // TODO : show some error
+        bc->disconnectProcessing();
+    }
+    return;
+}
+
 void BrokerSideClient::setPreviousSession(BrokerSideClient* ps) {
     this->subTopics = ps->subTopics;
     this->packetIDMap = ps->packetIDMap;
@@ -146,7 +157,11 @@ MQTT_ERROR BrokerSideClient::recvConnectMessage(ConnectMessage* m) {
 
     }
     if (m->keepAlive != 0) {
-        // start keepalive timer/loop
+        // TODO : bad way
+        this->threadIdx = 0;
+        std::thread t = std::thread(expirationTimer, this, this->threadIdx);
+        this->threads[this->threadIdx] = false;
+        t.join();
     }
     this->isConnecting = true;
     err = this->sendMessage(new ConnackMessage(sessionPresent, CONNECT_ACCEPTED));
@@ -279,7 +294,17 @@ MQTT_ERROR BrokerSideClient::recvUnsubscribeMessage(UnsubscribeMessage* m) {
 }
 
 MQTT_ERROR BrokerSideClient::recvUnsubackMessage(UnsubackMessage* m) {return INVALID_MESSAGE_CAME;}
-MQTT_ERROR BrokerSideClient::recvPingreqMessage(PingreqMessage* m) {return NO_ERROR;}
+MQTT_ERROR BrokerSideClient::recvPingreqMessage(PingreqMessage* m) {
+    this->sendMessage(new PingrespMessage());
+    if (this->keepAlive != 0) {
+        this->threads[this->threadIdx++] = true; // got ping;
+        std::thread t = std::thread(expirationTimer, this, this->threadIdx);
+        t.join();
+        this->threads[this->threadIdx] = false;
+    }
+    return NO_ERROR;
+
+}
 MQTT_ERROR BrokerSideClient::recvPingrespMessage(PingrespMessage* m) {return INVALID_MESSAGE_CAME;}
 
 MQTT_ERROR BrokerSideClient::recvDisconnectMessage(DisconnectMessage* m) {

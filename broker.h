@@ -23,7 +23,10 @@ class BrokerSideClient : public Terminal {
 private:
     Broker* broker;
     std::map<std::string, uint8_t> subTopics;
+    std::thread expirationThread;
+    int threadIdx;
 public:
+    std::map<int, bool> threads;
     BrokerSideClient(Transport* ct, Broker* broker);
     ~BrokerSideClient();
     MQTT_ERROR disconnectProcessing();
@@ -43,5 +46,7 @@ public:
     MQTT_ERROR recvPingrespMessage(PingrespMessage* m);
     MQTT_ERROR recvDisconnectMessage(DisconnectMessage* m);
 };
+
+void expirationTimer(BrokerSideClient* bc, int tID);
 
 #endif //MQTT_BROKER_H_
