@@ -2,9 +2,9 @@
 #include "util.h"
 #include <thread>
 #include <sys/time.h>
+#include "unistd.h"
 
-Client::Client(const std::string id, const User* user, uint16_t keepAlive, const Will* will) : Terminal(id, user, keepAlive, will) {
-}
+Client::Client(const std::string id, const User* user, uint16_t keepAlive, const Will* will) : pingDulation(0), Terminal(id, user, keepAlive, will) {}
 
 Client::~Client() {}
 
@@ -96,8 +96,13 @@ MQTT_ERROR Client::unsubscribe(std::vector<std::string> topics) {
 }
 
 MQTT_ERROR Client::disconnect() {
-    //TODO: add more detail
-    return this->sendMessage(new DisconnectMessage());
+    MQTT_ERROR err = this->sendMessage(new DisconnectMessage());
+    // TODO : find out how to use thread
+    //std::thread t = std::thread([]{
+    usleep(this->pingDulation*2);
+    this->disconnectProcessing();
+    //});
+    return err;
 }
 
 MQTT_ERROR Client::recvConnectMessage(ConnectMessage* m) {return INVALID_MESSAGE_CAME;}
@@ -187,7 +192,8 @@ MQTT_ERROR Client::recvPingrespMessage(PingrespMessage* m) {
     // TODO: implement duration base connection management
     struct timeval tmp;
     gettimeofday(&tmp, NULL);
-    if ((tmp.tv_sec - this->timeOfPing.tv_sec)*1000000 + (tmp.tv_usec - this->timeOfPing.tv_usec) >= this->keepAlive) {
+    this->pingDulation = (tmp.tv_sec - this->timeOfPing.tv_sec)*1000000 + (tmp.tv_usec - this->timeOfPing.tv_usec);
+    if (this->pingDulation >= this->keepAlive) {
         this->sendMessage(new DisconnectMessage());
         return SERVER_TIMED_OUT;
     }

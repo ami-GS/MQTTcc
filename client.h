@@ -12,6 +12,7 @@
 class Client : public Terminal {
 public:
     struct timeval timeOfPing;
+    uint32_t pingDulation;
     Client(const std::string id, const User* user, uint16_t keepAlive, const Will* will);
     ~Client();
     MQTT_ERROR ping();
