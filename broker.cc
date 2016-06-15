@@ -97,10 +97,14 @@ MQTT_ERROR  BrokerSideClient::disconnectProcessing() {
 
 void expirationTimer(BrokerSideClient* bc, int tID) {
     usleep(bc->keepAlive);
-    bool gotPing = bc->threads[tID];
-    if (!gotPing) {
-        // TODO : show some error
-        bc->disconnectProcessing();
+    if (bc->threads.find(tID) != bc->threads.end()) {
+        bool gotPing = bc->threads[tID];
+        if (!gotPing) {
+            // TODO : show some error
+            bc->disconnectProcessing();
+        }
+    } else {
+        // TODO : show error?
     }
     return;
 }
