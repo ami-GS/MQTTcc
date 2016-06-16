@@ -12,30 +12,32 @@ TopicNode::~TopicNode() {
     }
 }
 
-std::vector<TopicNode*> TopicNode::getNodesByNumberSign() {
+MQTT_ERROR TopicNode::getNodesByNumberSign(std::vector<TopicNode*>* resp) {
     if (fullPath.find_last_of("/") != std::string::npos) {
         fullPath = fullPath.substr(0, fullPath.size()-1);
     }
-    std::vector<TopicNode*> resp;
-    resp.push_back(this);
+    MQTT_ERROR err = NO_ERROR;
+    resp->push_back(this);
     if (nodes.size() > 0) {
         for (std::map<std::string, TopicNode*>::iterator itPair = nodes.begin(); itPair != nodes.end(); itPair++) {
             if (itPair->first[0] == '$') {
                 continue;
             }
-            std::vector<TopicNode*> respN = itPair->second->getNodesByNumberSign();
-            resp.insert(resp.end(), respN.begin(), respN.end());            
+            err = itPair->second->getNodesByNumberSign(resp);
+            if (err != NO_ERROR) {
+                return err;
+            }
         }
     }
-    return resp;
+    return err;
 }
 
-std::vector<TopicNode*> TopicNode::getTopicNode(const std::string topic, bool addNewNode, MQTT_ERROR& err) {
+MQTT_ERROR TopicNode::getTopicNode(const std::string topic, bool addNewNode, std::vector<TopicNode*>* resp) {
     std::string currentPath = "";
     std::vector<std::string> parts;
     split(topic, "/", &parts);
     TopicNode *nxt = this, *bef;
-    std::vector<TopicNode*> resp;
+    MQTT_ERROR err = NO_ERROR;
     std::string part;
     for (int i = 0; i < parts.size(); i++) {
         bef = nxt;
@@ -47,19 +49,16 @@ std::vector<TopicNode*> TopicNode::getTopicNode(const std::string topic, bool ad
                 }
                 std::string filledStr = topic;
                 filledStr.replace(topic.find_first_of("+"), 1, itPair->first);
-                std::vector<TopicNode*> respN = getTopicNode(filledStr, addNewNode, err);
+                err = getTopicNode(filledStr, addNewNode, resp);
                 if (err != NO_ERROR) {
-                    return resp;
+                    return err;
                 }
-                resp.insert(resp.end(), respN.begin(), respN.end());
             }
         } else if (part == "#") {
             if (i != parts.size() - 1) {
-                err = MULTI_LEVEL_WILDCARD_MUST_BE_ON_TAIL;
-                return resp;
+                return MULTI_LEVEL_WILDCARD_MUST_BE_ON_TAIL;
             }
-            std::vector<TopicNode*> respN = getNodesByNumberSign();
-            resp.insert(resp.end(), respN.begin(), respN.end());
+            err = getNodesByNumberSign(resp);
         } else {
                 if (part.find_last_of("#") != std::string::npos ||
                     part.find_last_of("+") != std::string::npos) {
@@ -76,48 +75,50 @@ std::vector<TopicNode*> TopicNode::getTopicNode(const std::string topic, bool ad
             }
             nxt = bef->nodes[part];
             if (parts.size() - 1 == i) {
-                resp.push_back(nxt);
+                resp->push_back(nxt);
             }
         }
     }
-    return resp;
+    return err;
 }
 
-std::vector<SubackCode> TopicNode::applySubscriber(const std::string clientID, const std::string topic, uint8_t qos, MQTT_ERROR& err) {
-    std::vector<SubackCode> resp;
-    std::vector<TopicNode*> subNodes = getTopicNode(topic, true, err);
+MQTT_ERROR TopicNode::applySubscriber(const std::string clientID, const std::string topic, uint8_t qos, std::vector<SubackCode>* resp) {
+    std::vector<TopicNode*> subNodes;
+    MQTT_ERROR err = getTopicNode(topic, true, &subNodes);
     if (err != NO_ERROR) {
-        return resp;
+        return err;
     }
     for (std::vector<TopicNode*>::iterator it = subNodes.begin(); it != subNodes.end(); it++) {
         // TODO: the return qos should be managed by broker
         (*it)->subscribers[clientID] = qos;
-        resp.push_back((SubackCode)qos);
+        resp->push_back((SubackCode)qos);
     }
-    return resp;
+    return err;
 }
 
-int TopicNode::deleteSubscriber(const std::string clientID, const std::string topic, MQTT_ERROR& err) {
-    std::vector<TopicNode*> subNodes = getTopicNode(topic, false, err);
+MQTT_ERROR TopicNode::deleteSubscriber(const std::string clientID, const std::string topic) {
+    std::vector<TopicNode*> subNodes;
+    MQTT_ERROR err= getTopicNode(topic, false, &subNodes);
     if (err != NO_ERROR) {
-        return -1;
+        return err;
     }
     for (std::vector<TopicNode*>::iterator it = subNodes.begin(); it != subNodes.end(); it++) {
         (*it)->subscribers.erase(clientID);
     }
-    return 1;
+    return err;
 }
 
-int TopicNode::applyRetain(const std::string topic, uint8_t qos, const std::string retain, MQTT_ERROR& err) {
-    std::vector<TopicNode*> retainNodes = getTopicNode(topic, true, err);
+MQTT_ERROR TopicNode::applyRetain(const std::string topic, uint8_t qos, const std::string retain) {
+    std::vector<TopicNode*> retainNodes;
+    MQTT_ERROR err = getTopicNode(topic, true, &retainNodes);
     if (err != NO_ERROR) {
-        return -1;
+        return err;
     }
     for (std::vector<TopicNode*>::iterator it = retainNodes.begin(); it != retainNodes.end(); it++) {
         (*it)->retainMessage = retain;
         (*it)->retainQoS = qos;
     }
-    return 1;
+    return err;
 }
 
 std::vector<std::string> TopicNode::dumpTree() {
@@ -131,7 +132,7 @@ std::vector<std::string> TopicNode::dumpTree() {
         std::string currentPath = "";
         if (this->name.size() > 0) {
             currentPath = this->name + "/";
-        }
+       }
         for (std::vector<std::string>::iterator it = deepStrs.begin(); it != deepStrs.end(); it++) {
             strs.push_back(currentPath + *it);
         }

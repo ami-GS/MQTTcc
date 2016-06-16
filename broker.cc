@@ -70,12 +70,13 @@ MQTT_ERROR  BrokerSideClient::disconnectProcessing() {
     MQTT_ERROR err = NO_ERROR;
     if (this->will != NULL) {
         if (this->will->retain) {
-            this->broker->topicRoot->applyRetain(will->topic, will->qos, will->message, err);
+            err = this->broker->topicRoot->applyRetain(will->topic, will->qos, will->message);
             if (err != NO_ERROR) {
                 return err;
                 }
         }
-        std::vector<TopicNode*> nodes = this->broker->topicRoot->getTopicNode(will->topic, true, err);
+        std::vector<TopicNode*> nodes;
+        err = this->broker->topicRoot->getTopicNode(will->topic, true, &nodes);
         if (err != NO_ERROR) {
             return err;
         }
@@ -187,13 +188,13 @@ MQTT_ERROR BrokerSideClient::recvPublishMessage(PublishMessage* m) {
         if (m->fh->qos == 0 && data.size() > 0) {
             data = "";
         }
-        this->broker->topicRoot->applyRetain(m->topicName, m->fh->qos, data, err);
+        err = this->broker->topicRoot->applyRetain(m->topicName, m->fh->qos, data);
         if (err != NO_ERROR) {
             return err;
         }
     }
-
-    std::vector<TopicNode*> nodes = broker->topicRoot->getTopicNode(m->topicName, true, err);
+    std::vector<TopicNode*> nodes;
+    err = broker->topicRoot->getTopicNode(m->topicName, true, &nodes);
     if (err != NO_ERROR) {
         return err;
     }
@@ -257,7 +258,8 @@ MQTT_ERROR BrokerSideClient::recvSubscribeMessage(SubscribeMessage* m) {
 
     MQTT_ERROR err; // this sould be duplicate?
     for (std::vector<SubscribeTopic*>::iterator it = m->subTopics.begin(); it != m->subTopics.end(); it++) {
-        std::vector<TopicNode*> nodes = this->broker->topicRoot->getTopicNode((*it)->topic, true, err);
+        std::vector<TopicNode*> nodes;
+        err = this->broker->topicRoot->getTopicNode((*it)->topic, true, &nodes);
         SubackCode code = (SubackCode)(*it)->qos;
 
         if (err != NO_ERROR) {
@@ -289,7 +291,7 @@ MQTT_ERROR BrokerSideClient::recvUnsubscribeMessage(UnsubscribeMessage* m) {
 
     MQTT_ERROR err = NO_ERROR;
     for (std::vector<std::string>::iterator it = m->topics.begin(); it != m->topics.end(); it++) {
-        this->broker->topicRoot->deleteSubscriber(this->ID, *it, err);
+        err = this->broker->topicRoot->deleteSubscriber(this->ID, *it);
         this->subTopics.erase(*it);
     }
 
