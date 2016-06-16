@@ -14,7 +14,7 @@ TopicNode::~TopicNode() {
 
 std::vector<TopicNode*> TopicNode::getNodesByNumberSign() {
     if (fullPath.find_last_of("/") != std::string::npos) {
-        //fullPath = fullPath.substr(0, fullPath.find_last_of("/"));
+        fullPath = fullPath.substr(0, fullPath.size()-1);
     }
     std::vector<TopicNode*> resp;
     resp.push_back(this);
@@ -61,9 +61,10 @@ std::vector<TopicNode*> TopicNode::getTopicNode(const std::string topic, bool ad
             std::vector<TopicNode*> respN = getNodesByNumberSign();
             resp.insert(resp.end(), respN.begin(), respN.end());
         } else {
-            //if (/*has suffix of # or +*/) {
-            //    err = WILDCARD_MUST_NOT_BE_ADJACENT_TO_NAME;
-            //}
+                if (part.find_last_of("#") != std::string::npos ||
+                    part.find_last_of("+") != std::string::npos) {
+                    return WILDCARD_MUST_NOT_BE_ADJACENT_TO_NAME;
+                }
             currentPath += part;
             if (part.size()-1 != i) {
                 currentPath += "/";
