@@ -14,6 +14,14 @@ MQTT_ERROR Client::ping() {
     return NO_ERROR;
 }
 
+void pingLoop(Client* c) {
+    while (c->isConnecting) {
+        usleep(c->pingDulation);
+        c->ct->sendMessage(new PingrespMessage());
+        gettimeofday(&(c->timeOfPing), NULL);
+    }
+}
+
 MQTT_ERROR Client::connect(const std::string addr, int port, bool cs) {
     if (this->ID.size() == 0 && !cs) {
         return CLEANSESSION_MUST_BE_TRUE;
@@ -114,7 +122,8 @@ MQTT_ERROR Client::recvConnackMessage(ConnackMessage* m) {
 
     this->isConnecting = true;
     if (this->keepAlive != 0) {
-        // start ping loop
+        std::thread t(pingLoop, this);
+        t.join();
     }
 
     return this->redelivery();
