@@ -15,6 +15,7 @@ public:
     Transport(int sock, sockaddr_in* client);
     Transport(const std::string tragetIP, const int targetPort);
     ~Transport() {};
+    void connectTarget();
     int64_t sendMessage(Message* m);
     MQTT_ERROR readMessage();
 };

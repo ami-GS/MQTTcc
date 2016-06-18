@@ -19,9 +19,16 @@ Transport::Transport(const std::string targetIP, const int targetPort) {
     memset(this->readBuff, 0, 65535);
     memset(this->writeBuff, 0, 65535);
     this->sock = socket(AF_INET, SOCK_STREAM, 0);
+    this->target = new sockaddr_in();
+    memset(&this->target->sin_addr, 0, sizeof(struct in_addr));
     this->target->sin_family = AF_INET;
     this->target->sin_port = htons(targetPort);
     this->target->sin_addr.s_addr = inet_addr(targetIP.c_str());
+}
+
+void Transport::connectTarget() {
+    // TODO : do more detail
+    connect(this->sock, (struct sockaddr *)this->target, sizeof(sockaddr));
 }
 
 int64_t Transport::sendMessage(Message* m) {
