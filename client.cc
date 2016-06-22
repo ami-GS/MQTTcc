@@ -92,8 +92,9 @@ MQTT_ERROR Client::unsubscribe(std::vector<std::string> topics) {
         for (int j = 0; j < parts.size(); j++) {
             if (parts[j][0] == '#' && j != parts.size() - 1) {
                 return MULTI_LEVEL_WILDCARD_MUST_BE_ON_TAIL;
-            } else if (false) {
-            } // has suffix of '#' and '+'
+            } else if (parts[j][parts[j].size()-1] == '#' || parts[j][parts[j].size()-1] == '+') {
+                return WILDCARD_MUST_NOT_BE_ADJACENT_TO_NAME;
+            }
         }
     }
     uint16_t id = 0;
