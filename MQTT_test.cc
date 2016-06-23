@@ -13,8 +13,8 @@ TEST(UtilTest, NormalTest) {
     EXPECT_EQ(enc_e_len, enc_a_len);
     EXPECT_TRUE(0 == memcmp(enc_a_wire, e_wire, enc_a_len));
 
-    int64_t dec_a_len = 0;
-    std::string dec_a_str = UTF8_decode(e_wire, &dec_a_len);
+    std::string dec_a_str;
+    int64_t dec_a_len = UTF8_decode(e_wire, &dec_a_str);
     EXPECT_EQ(enc_e_len, dec_a_len);
     EXPECT_TRUE(0 == memcmp(data.c_str(), dec_a_str.c_str(), data.size()));
 
@@ -57,33 +57,72 @@ TEST(FrameHeaderTest, NormalTest) {
     uint16_t id = 0;
 
     FixedHeader* fh = new FixedHeader(type, dup, qos, retain, len, id);
-    EXPECT_EQ(type, fh->Type);
-    EXPECT_EQ(dup, fh->Dup);
-    EXPECT_EQ(qos, fh->QoS);
-    EXPECT_EQ(retain, fh->Retain);
-    EXPECT_EQ(len, fh->Length);
-    EXPECT_EQ(id, fh->PacketID);
+    EXPECT_EQ(type, fh->type);
+    EXPECT_EQ(dup, fh->dup);
+    EXPECT_EQ(qos, fh->qos);
+    EXPECT_EQ(retain, fh->retain);
+    EXPECT_EQ(len, fh->length);
+    EXPECT_EQ(id, fh->packetID);
 
     uint8_t e_wire[2] = {0x3d, 0x01};
     int e_len = 2;
     uint8_t a_wire[30];
-    int64_t a_len = fh->GetWire(a_wire);
+    int64_t a_len = fh->getWire(a_wire);
     EXPECT_EQ(e_len, a_len);
     EXPECT_TRUE(0 == memcmp(e_wire, a_wire, e_len));
 
     MQTT_ERROR a_err = NO_ERROR;
     FixedHeader* a_fh = new FixedHeader();
     a_len = a_fh->parseHeader(e_wire, a_err);
-    EXPECT_EQ(type, a_fh->Type);
-    EXPECT_EQ(dup, a_fh->Dup);
-    EXPECT_EQ(qos, a_fh->QoS);
-    EXPECT_EQ(retain, a_fh->Retain);
-    EXPECT_EQ(len, a_fh->Length);
-    EXPECT_EQ(id, a_fh->PacketID);
+    EXPECT_EQ(type, a_fh->type);
+    EXPECT_EQ(dup, a_fh->dup);
+    EXPECT_EQ(qos, a_fh->qos);
+    EXPECT_EQ(retain, a_fh->retain);
+    EXPECT_EQ(len, a_fh->length);
+    EXPECT_EQ(id, a_fh->packetID);
     EXPECT_EQ(NO_ERROR, a_err);
     EXPECT_EQ(e_len, a_len);
 }
-    
+
+
+TEST(ConnectMessageTead, NormalTest) {
+    uint16_t keepAlive = 10;
+    std::string id = "my-ID";
+    bool cleanSession = false;
+    uint8_t flags = WILL_FLAG | WILL_RETAIN_FLAG | PASSWORD_FLAG | USERNAME_FLAG;
+    User* user = new User{"daiki", "pass"};
+    Will* will = new Will{"daiki/will", "message", true, 1};
+    uint32_t e_len = 16 + MQTT_3_1_1.name.size() + id.size() + will->topic.size() + will->message.size() + user->name.size() + user->passwd.size();
+    FixedHeader* a_fh = new FixedHeader(CONNECT_MESSAGE_TYPE, false, 0, false, e_len, 0);
+
+    ConnectMessage* a_mess = new ConnectMessage(keepAlive, id, cleanSession, will, user);
+    uint8_t a_wire[100];
+    uint8_t e_wire[100];
+    uint8_t* e_st = e_wire;
+    uint32_t a_len = a_fh->getWire(a_wire);
+    uint32_t tmp_len = a_fh->getWire(e_st);
+    a_len += a_mess->getWire(a_wire+a_len);
+    e_st += tmp_len;
+    tmp_len = UTF8_encode(e_st+e_len, MQTT_3_1_1.name);
+    e_st += tmp_len;
+    *(e_st++) = MQTT_3_1_1.level;
+    *(e_st++) = flags;
+    *(e_st++) = (uint8_t)(keepAlive >> 8);
+    *(e_st++) = (uint8_t)keepAlive;
+    tmp_len = UTF8_encode(e_st, id);
+    e_st += tmp_len;
+    tmp_len = UTF8_encode(e_st, will->topic);
+    e_st += tmp_len;
+    tmp_len = UTF8_encode(e_st, will->message);
+    e_st += tmp_len;
+    tmp_len = UTF8_encode(e_st, user->name);
+    e_st += tmp_len;
+    tmp_len = UTF8_encode(e_st, user->passwd);
+    e_st += tmp_len;
+    EXPECT_EQ(e_st-e_wire, a_len);
+    EXPECT_TRUE(0 == memcmp(e_wire, a_wire, e_len));
+}
+
 
 int main(int argc, char **argv) {
     ::testing::InitGoogleTest(&argc, argv);
