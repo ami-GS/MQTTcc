@@ -35,8 +35,8 @@ MQTT_ERROR Terminal::sendMessage(Message* m) {
     if (this->packetIDMap.find(packetID) != this->packetIDMap.end()) {
         return PACKET_ID_IS_USED_ALREADY;
     }
-    int64_t len = this->ct->sendMessage(m);
-    if (len != -1) {
+    MQTT_ERROR err = this->ct->sendMessage(m);
+    if (err == NO_ERROR) {
         if (m->fh->type == PUBLISH_MESSAGE_TYPE) {
             if (packetID > 0) {
                 this->packetIDMap[packetID] = m;
@@ -48,7 +48,7 @@ MQTT_ERROR Terminal::sendMessage(Message* m) {
             this->packetIDMap[packetID] = m;
         }
     }
-    return NO_ERROR;
+    return err;
 }
 
 MQTT_ERROR Terminal::redelivery() {

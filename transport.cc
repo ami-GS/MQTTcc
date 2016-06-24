@@ -31,16 +31,17 @@ void Transport::connectTarget() {
     connect(this->sock, (struct sockaddr *)this->target, sizeof(sockaddr));
 }
 
-int64_t Transport::sendMessage(Message* m) {
+MQTT_ERROR Transport::sendMessage(Message* m) {
     uint64_t len = m->getWire(this->writeBuff);
     if (len == -1) {
-        return -1;
+        // TODO : more detalied error
+        return SEND_ERROR;
     }
     write(this->sock, this->writeBuff, len);
     if (m->fh->packetID > 0) {
         delete m;
     }
-    return len;
+    return NO_ERROR;
 }
 
 MQTT_ERROR Transport::readMessage() {

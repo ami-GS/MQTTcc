@@ -9,9 +9,9 @@ Client::Client(const std::string id, const User* user, uint16_t keepAlive, const
 Client::~Client() {}
 
 MQTT_ERROR Client::ping() {
-    this->ct->sendMessage(new PingreqMessage());
+    MQTT_ERROR err = this->ct->sendMessage(new PingreqMessage());
     gettimeofday(&(this->timeOfPing), NULL);
-    return NO_ERROR;
+    return err;
 }
 
 void pingLoop(Client* c) {
@@ -31,14 +31,14 @@ MQTT_ERROR Client::connect(const std::string addr, int port, bool cs) {
     this->ct = new Transport(addr, port);
     this->ct->connectTarget();
     this->cleanSession = cs;
-    int64_t len = this->ct->sendMessage(new ConnectMessage(this->keepAlive, this->ID, this->cleanSession, this->will, this->user));
-    if (len == -1) {
-        //return ; // TODO: transport error?
+    MQTT_ERROR err = this->ct->sendMessage(new ConnectMessage(this->keepAlive, this->ID, this->cleanSession, this->will, this->user));
+    if (err != NO_ERROR) {
+        return err;
     }
     std::thread t(readLoop, this);
     t.join();
     this->readThread = &t;
-    return NO_ERROR;
+    return err;
 }
 
 MQTT_ERROR Client::disconnectProcessing() {
@@ -200,7 +200,6 @@ MQTT_ERROR Client::recvUnsubackMessage(UnsubackMessage* m) {
 MQTT_ERROR Client::recvPingreqMessage(PingreqMessage* m) {return INVALID_MESSAGE_CAME;}
 
 MQTT_ERROR Client::recvPingrespMessage(PingrespMessage* m) {
-    // TODO: implement duration base connection management
     struct timeval tmp;
     gettimeofday(&tmp, NULL);
     this->pingDulation = (tmp.tv_sec - this->timeOfPing.tv_sec)*1000000 + (tmp.tv_usec - this->timeOfPing.tv_usec);

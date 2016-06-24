@@ -16,7 +16,7 @@ public:
     Transport(const std::string tragetIP, const int targetPort);
     ~Transport() {};
     void connectTarget();
-    int64_t sendMessage(Message* m);
+    MQTT_ERROR sendMessage(Message* m);
     MQTT_ERROR readMessage();
 };
 

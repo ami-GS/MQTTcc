@@ -213,9 +213,9 @@ MQTT_ERROR BrokerSideClient::recvPublishMessage(PublishMessage* m) {
             return PACKET_ID_SHOULD_BE_ZERO;
         }
     case 1:
-        this->sendMessage(new PubackMessage(m->fh->packetID));
+        err = this->sendMessage(new PubackMessage(m->fh->packetID));
     case 2:
-        this->sendMessage(new PubrecMessage(m->fh->packetID));
+        err = this->sendMessage(new PubrecMessage(m->fh->packetID));
     }
 
     return err;
@@ -295,13 +295,16 @@ MQTT_ERROR BrokerSideClient::recvUnsubscribeMessage(UnsubscribeMessage* m) {
         this->subTopics.erase(*it);
     }
 
-    this->sendMessage(new UnsubackMessage(m->fh->packetID));
+    err = this->sendMessage(new UnsubackMessage(m->fh->packetID));
     return err;
 }
 
 MQTT_ERROR BrokerSideClient::recvUnsubackMessage(UnsubackMessage* m) {return INVALID_MESSAGE_CAME;}
 MQTT_ERROR BrokerSideClient::recvPingreqMessage(PingreqMessage* m) {
-    this->sendMessage(new PingrespMessage());
+    MQTT_ERROR err = this->sendMessage(new PingrespMessage());
+    if (err != NO_ERROR) {
+        return err;
+    }
     if (this->keepAlive != 0) {
         this->threads[this->threadIdx++] = true; // got ping;
         std::thread t = std::thread(expirationTimer, this, this->threadIdx);
