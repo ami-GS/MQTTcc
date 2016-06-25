@@ -17,7 +17,7 @@ MQTT_ERROR Broker::Start() {
     struct sockaddr_in addr;
     int listener = socket(AF_INET, SOCK_STREAM, 0);
     addr.sin_family = AF_INET;
-    addr.sin_port = 8883;
+    addr.sin_port = htons(8883);
     addr.sin_addr.s_addr = INADDR_ANY;
     bind(listener, (struct sockaddr *)&addr, sizeof(addr));
     listen(listener, 5);
