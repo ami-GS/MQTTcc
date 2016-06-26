@@ -70,14 +70,14 @@ Message::~Message() {
 
 ConnectMessage::ConnectMessage(uint16_t keepAlive, std::string id, bool cleanSession, const struct Will* w, const struct User* u) :
     keepAlive(keepAlive), clientID(id), cleanSession(cleanSession), will(w), user(u), flags(0), protocol(MQTT_3_1_1), Message(new FixedHeader(CONNECT_MESSAGE_TYPE, false, 0, false, 0, 0)) {
+    std::cout << "will qos:" << this->will->qos << std::endl;
     uint32_t length = 6 + protocol.name.size() + 2 + id.size();
     if (this->cleanSession) {
-        this->flags |= 1; //CLEANSESSION_FLAG;
-        
+        this->flags |= CLEANSESSION_FLAG;
     }
     if (will != NULL) {
         length += 4 + this->will->topic.size() + this->will->message.size();
-        this->flags |= 2 | (this->will->qos<<3);//WILL_FLAG | (will->qos<<3);
+        this->flags |= WILL_FLAG | (this->will->qos<<3);
         if (this->will->retain) {
             this->flags |= WILL_RETAIN_FLAG;
         }
@@ -85,10 +85,10 @@ ConnectMessage::ConnectMessage(uint16_t keepAlive, std::string id, bool cleanSes
     if (this->user != NULL) {
         length += 4 + this->user->name.size() + this->user->passwd.size();
         if (this->user->name.size() > 0) {
-            this->flags |= 10;//USERNAME_FLAG;
+            this->flags |= USERNAME_FLAG;
         }
         if (this->user->passwd.size() > 0) {
-            this->flags |= 9;//PASSWORD_FLAG;
+            this->flags |= PASSWORD_FLAG;
         }
     } 
     this->fh->length = length;
@@ -217,7 +217,8 @@ std::string ConnectMessage::flagString() {
     case WILL_QOS2_FLAG:
         out += "\tWill_QoS2\n";
     case WILL_QOS3_FLAG:
-        out += "\tWill_QoS2\n";
+        out += "\tWill_QoS3\n";
+
     }
     if ((this->flags & WILL_RETAIN_FLAG) == WILL_RETAIN_FLAG) {
         out += "\tWillRetain\n";
