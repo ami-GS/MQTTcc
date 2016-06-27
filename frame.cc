@@ -55,7 +55,7 @@ int64_t FixedHeader::parseHeader(const uint8_t* wire, MQTT_ERROR& err) {
 
 std::string FixedHeader::getString() {
     std::stringstream ss;
-    ss  << "[" << TypeString[this->type] << "]\ndup=" << this->dup << ", qos=" << this->qos << ", retain=" << this->retain << ", Remain Length=" << this->length << "\n";
+    ss  << "[" << TypeString[this->type] << "]\ndup=" << this->dup << ", qos=" << unsigned(this->qos) << ", retain=" << this->retain << ", Remain Length=" << this->length << "\n";
     return ss.str();
 }
 
@@ -234,7 +234,7 @@ std::string ConnectMessage::flagString() {
 
 std::string ConnectMessage::getString() {
     std::stringstream ss;
-    ss << this->fh->getString() << "Protocol=" << protocol.name << ":" << protocol.level << ", Flags=\n" << flagString() << "\t, KeepAlive=" << keepAlive << ", ClientID=" << clientID << ", Will={" << this->will->topic << ":" << this->will->message << ", retain=" << this->will->retain << ", QoS=" << this->will->qos << "}, UserInfo={" << this->user->name << ":" << this->user->passwd << "}";
+    ss << this->fh->getString() << "Protocol=" << protocol.name << ":" << unsigned(protocol.level) << ", Flags=\n" << flagString() << "\t, KeepAlive=" << keepAlive << ", ClientID=" << clientID << ", Will={" << this->will->topic << ":" << this->will->message << ", retain=" << this->will->retain << ", QoS=" << unsigned(this->will->qos) << "}, UserInfo={" << this->user->name << ":" << this->user->passwd << "}";
     return ss.str();
 }
 
@@ -494,7 +494,7 @@ std::string SubscribeMessage::getString() {
     std::stringstream ss;
     ss << this->fh->getString() << "packetID=" << this->fh->packetID << "\n";
     for (int i = 0; i < this->subTopics.size(); i++) {
-        ss << "\t" << i << ": Topic=" << this->subTopics[i]->topic << ", QoS=" << this->subTopics[i]->qos << "\n";
+        ss << "\t" << i << ": Topic=" << this->subTopics[i]->topic << ", QoS=" << unsigned(this->subTopics[i]->qos) << "\n";
     }
 
     return ss.str();
