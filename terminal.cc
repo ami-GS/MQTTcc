@@ -98,73 +98,87 @@ MQTT_ERROR readLoop(Terminal* c) {
             switch (fh->type) {
             case CONNECT_MESSAGE_TYPE:
             {
-                ConnectMessage* m = new ConnectMessage(fh, c->ct->readBuff, err);
+                ConnectMessage* m = new ConnectMessage(fh, c->ct->readBuff+len, err);
                 err = c->recvConnectMessage(m);
+                break;
             }
             case CONNACK_MESSAGE_TYPE:
             {
-                ConnackMessage* m = new ConnackMessage(fh, c->ct->readBuff, err);
+                ConnackMessage* m = new ConnackMessage(fh, c->ct->readBuff+len, err);
                 err = c->recvConnackMessage(m);
+                break;
             }
             case PUBLISH_MESSAGE_TYPE:
             {
-                PublishMessage* m = new PublishMessage(fh, c->ct->readBuff, err);
+                PublishMessage* m = new PublishMessage(fh, c->ct->readBuff+len, err);
                 err = c->recvPublishMessage(m);
+                break;
             }
             case PUBACK_MESSAGE_TYPE:
             {
-                PubackMessage* m = new PubackMessage(fh, c->ct->readBuff, err);
+                PubackMessage* m = new PubackMessage(fh, c->ct->readBuff+len, err);
                 err = c->recvPubackMessage(m);
+                break;
             }
             case PUBREC_MESSAGE_TYPE:
             {
-                PubrecMessage* m = new PubrecMessage(fh, c->ct->readBuff, err);
+                PubrecMessage* m = new PubrecMessage(fh, c->ct->readBuff+len, err);
                 err = c->recvPubrecMessage(m);
+                break;
             }
             case PUBREL_MESSAGE_TYPE:
             {
-                PubrelMessage* m = new PubrelMessage(fh, c->ct->readBuff, err);
+                PubrelMessage* m = new PubrelMessage(fh, c->ct->readBuff+len, err);
                 err = c->recvPubrelMessage(m);
+                break;
             }
             case PUBCOMP_MESSAGE_TYPE:
             {
-                PubcompMessage* m = new PubcompMessage(fh, c->ct->readBuff, err);
+                PubcompMessage* m = new PubcompMessage(fh, c->ct->readBuff+len, err);
                 err = c->recvPubcompMessage(m);
+                break;
             }
             case SUBSCRIBE_MESSAGE_TYPE:
             {
-                SubscribeMessage* m = new SubscribeMessage(fh, c->ct->readBuff, err);
+                SubscribeMessage* m = new SubscribeMessage(fh, c->ct->readBuff+len, err);
                 err = c->recvSubscribeMessage(m);
+                break;
             }
             case SUBACK_MESSAGE_TYPE:
             {
-                SubackMessage* m = new SubackMessage(fh, c->ct->readBuff, err);
+                SubackMessage* m = new SubackMessage(fh, c->ct->readBuff+len, err);
                 err = c->recvSubackMessage(m);
+                break;
             }
             case UNSUBSCRIBE_MESSAGE_TYPE:
             {
-                UnsubscribeMessage* m = new UnsubscribeMessage(fh, c->ct->readBuff, err);
+                UnsubscribeMessage* m = new UnsubscribeMessage(fh, c->ct->readBuff+len, err);
                 err = c->recvUnsubscribeMessage(m);
+                break;
             }
             case UNSUBACK_MESSAGE_TYPE:
             {
-                UnsubackMessage* m = new UnsubackMessage(fh, c->ct->readBuff, err);
+                UnsubackMessage* m = new UnsubackMessage(fh, c->ct->readBuff+len, err);
                 err = c->recvUnsubackMessage(m);
+                break;
             }
             case PINGREQ_MESSAGE_TYPE:
             {
-                PingreqMessage* m = new PingreqMessage(fh, c->ct->readBuff, err);
+                PingreqMessage* m = new PingreqMessage(fh, c->ct->readBuff+len, err);
                 err = c->recvPingreqMessage(m);
+                break;
             }
             case PINGRESP_MESSAGE_TYPE:
             {
-                PingrespMessage* m = new PingrespMessage(fh, c->ct->readBuff, err);
+                PingrespMessage* m = new PingrespMessage(fh, c->ct->readBuff+len, err);
                 err = c->recvPingrespMessage(m);
+                break;
             }
             case DISCONNECT_MESSAGE_TYPE:
             {
-                DisconnectMessage* m = new DisconnectMessage(fh, c->ct->readBuff, err);
+                DisconnectMessage* m = new DisconnectMessage(fh, c->ct->readBuff+len, err);
                 err = c->recvDisconnectMessage(m);
+                break;
             }
             default:
                 err = INVALID_MESSAGE_TYPE;
