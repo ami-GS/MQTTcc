@@ -148,10 +148,13 @@ MQTT_ERROR Client::recvPublishMessage(PublishMessage* m) {
         if (m->fh->packetID != 0) {
             return PACKET_ID_SHOULD_BE_ZERO; // packet id should be zero
         }
+        break;
     case 1:
         return this->sendMessage(new PubackMessage(m->fh->packetID));
+        break;
     case 2:
         return this->sendMessage(new PubrecMessage(m->fh->packetID));
+        break;
     }
     return NO_ERROR;
 }

@@ -211,14 +211,13 @@ std::string ConnectMessage::flagString() {
     }
     switch (this->flags & WILL_QOS3_FLAG) {
     case WILL_QOS0_FLAG:
-        out += "\tWill_QoS0\n";
+        out += "\tWill_QoS0\n"; break;
     case WILL_QOS1_FLAG:
-        out += "\tWill_QoS1\n";
+        out += "\tWill_QoS1\n"; break;
     case WILL_QOS2_FLAG:
-        out += "\tWill_QoS2\n";
+        out += "\tWill_QoS2\n"; break;
     case WILL_QOS3_FLAG:
-        out += "\tWill_QoS3\n";
-
+        out += "\tWill_QoS3\n"; break;
     }
     if ((this->flags & WILL_RETAIN_FLAG) == WILL_RETAIN_FLAG) {
         out += "\tWillRetain\n";

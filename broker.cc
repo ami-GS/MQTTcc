@@ -212,10 +212,13 @@ MQTT_ERROR BrokerSideClient::recvPublishMessage(PublishMessage* m) {
         if (m->fh->packetID != 0){
             return PACKET_ID_SHOULD_BE_ZERO;
         }
+        break;
     case 1:
         err = this->sendMessage(new PubackMessage(m->fh->packetID));
+        break;
     case 2:
         err = this->sendMessage(new PubrecMessage(m->fh->packetID));
+        break;
     }
 
     return err;
