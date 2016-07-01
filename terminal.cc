@@ -55,6 +55,9 @@ MQTT_ERROR Terminal::redelivery() {
     MQTT_ERROR err;
     if (!this->cleanSession && this->packetIDMap.size() > 0) {
         for (std::map<uint16_t, Message*>::iterator itPair = this->packetIDMap.begin(); itPair != this->packetIDMap.end(); itPair++) {
+            if (itPair->second->fh->type == PUBLISH_MESSAGE_TYPE) {
+                itPair->second->fh->dup = true;
+            }
             err = this->sendMessage(itPair->second);
             if (err != NO_ERROR) {
                 return err;
