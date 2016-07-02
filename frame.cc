@@ -164,7 +164,7 @@ int64_t ConnectMessage::parse(const uint8_t* wire, MQTT_ERROR& err) {
         err = MALFORMED_CONNECT_FLAG_BIT;
         return -1;
     }
-    if ((this->flags & USERNAME_FLAG) == USERNAME_FLAG && (this->flags & PASSWORD_FLAG) == PASSWORD_FLAG) {
+    if ((this->flags & USERNAME_FLAG) != USERNAME_FLAG && (this->flags & PASSWORD_FLAG) == PASSWORD_FLAG) {
         err = USERNAME_DOES_NOT_EXIST_WITH_PASSWORD;
         return -1;
     }
