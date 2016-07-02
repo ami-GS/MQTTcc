@@ -98,89 +98,104 @@ MQTT_ERROR readLoop(Terminal* c) {
         if (err == NO_ERROR) {
             FixedHeader* fh = new FixedHeader();
             int len = fh->parseHeader(c->ct->readBuff, err);
+            Message* m;
             switch (fh->type) {
             case CONNECT_MESSAGE_TYPE:
             {
-                ConnectMessage* m = new ConnectMessage(fh, c->ct->readBuff+len, err);
-                err = c->recvConnectMessage(m);
+                m = new ConnectMessage(fh, c->ct->readBuff+len, err);
+                std::cout << "[RECV]" << m->getString() << std::endl;
+                err = c->recvConnectMessage((ConnectMessage*)m);
                 break;
             }
             case CONNACK_MESSAGE_TYPE:
             {
-                ConnackMessage* m = new ConnackMessage(fh, c->ct->readBuff+len, err);
-                err = c->recvConnackMessage(m);
+                m = new ConnackMessage(fh, c->ct->readBuff+len, err);
+                std::cout << "[RECV]" << m->getString() << std::endl;
+                err = c->recvConnackMessage((ConnackMessage*)m);
                 break;
             }
             case PUBLISH_MESSAGE_TYPE:
             {
-                PublishMessage* m = new PublishMessage(fh, c->ct->readBuff+len, err);
-                err = c->recvPublishMessage(m);
+                m = new PublishMessage(fh, c->ct->readBuff+len, err);
+                std::cout << "[RECV]" << m->getString() << std::endl;
+                err = c->recvPublishMessage((PublishMessage*)m);
                 break;
             }
             case PUBACK_MESSAGE_TYPE:
             {
-                PubackMessage* m = new PubackMessage(fh, c->ct->readBuff+len, err);
-                err = c->recvPubackMessage(m);
+                m = new PubackMessage(fh, c->ct->readBuff+len, err);
+                std::cout << "[RECV]" << m->getString() << std::endl;
+                err = c->recvPubackMessage((PubackMessage*)m);
                 break;
             }
             case PUBREC_MESSAGE_TYPE:
             {
-                PubrecMessage* m = new PubrecMessage(fh, c->ct->readBuff+len, err);
-                err = c->recvPubrecMessage(m);
+                m = new PubrecMessage(fh, c->ct->readBuff+len, err);
+                std::cout << "[RECV]" << m->getString() << std::endl;
+                err = c->recvPubrecMessage((PubrecMessage*)m);
                 break;
             }
             case PUBREL_MESSAGE_TYPE:
             {
-                PubrelMessage* m = new PubrelMessage(fh, c->ct->readBuff+len, err);
-                err = c->recvPubrelMessage(m);
+                m = new PubrelMessage(fh, c->ct->readBuff+len, err);
+                std::cout << "[RECV]" << m->getString() << std::endl;
+                err = c->recvPubrelMessage((PubrelMessage*)m);
                 break;
             }
             case PUBCOMP_MESSAGE_TYPE:
             {
-                PubcompMessage* m = new PubcompMessage(fh, c->ct->readBuff+len, err);
-                err = c->recvPubcompMessage(m);
+                m = new PubcompMessage(fh, c->ct->readBuff+len, err);
+                std::cout << "[RECV]" << m->getString() << std::endl;
+                err = c->recvPubcompMessage((PubcompMessage*)m);
                 break;
             }
             case SUBSCRIBE_MESSAGE_TYPE:
             {
-                SubscribeMessage* m = new SubscribeMessage(fh, c->ct->readBuff+len, err);
-                err = c->recvSubscribeMessage(m);
+                m = new SubscribeMessage(fh, c->ct->readBuff+len, err);
+                std::cout << "[RECV]" << m->getString() << std::endl;
+                err = c->recvSubscribeMessage((SubscribeMessage*)m);
                 break;
             }
             case SUBACK_MESSAGE_TYPE:
             {
-                SubackMessage* m = new SubackMessage(fh, c->ct->readBuff+len, err);
-                err = c->recvSubackMessage(m);
+                m = new SubackMessage(fh, c->ct->readBuff+len, err);
+                std::cout << "[RECV]" << m->getString() << std::endl;
+                err = c->recvSubackMessage((SubackMessage*)m);
                 break;
             }
             case UNSUBSCRIBE_MESSAGE_TYPE:
             {
-                UnsubscribeMessage* m = new UnsubscribeMessage(fh, c->ct->readBuff+len, err);
-                err = c->recvUnsubscribeMessage(m);
+                m = new UnsubscribeMessage(fh, c->ct->readBuff+len, err);
+                std::cout << "[RECV]" << m->getString() << std::endl;
+                err = c->recvUnsubscribeMessage((UnsubscribeMessage*)m);
                 break;
             }
             case UNSUBACK_MESSAGE_TYPE:
             {
-                UnsubackMessage* m = new UnsubackMessage(fh, c->ct->readBuff+len, err);
-                err = c->recvUnsubackMessage(m);
+                m = new UnsubackMessage(fh, c->ct->readBuff+len, err);
+                std::cout << "[RECV]" << m->getString() << std::endl;
+                err = c->recvUnsubackMessage((UnsubackMessage*)m);
                 break;
             }
             case PINGREQ_MESSAGE_TYPE:
             {
-                PingreqMessage* m = new PingreqMessage(fh, c->ct->readBuff+len, err);
-                err = c->recvPingreqMessage(m);
+                m = new PingreqMessage(fh, c->ct->readBuff+len, err);
+                std::cout << "[RECV]" << m->getString() << std::endl;
+                err = c->recvPingreqMessage((PingreqMessage*)m);
                 break;
             }
             case PINGRESP_MESSAGE_TYPE:
             {
-                PingrespMessage* m = new PingrespMessage(fh, c->ct->readBuff+len, err);
-                err = c->recvPingrespMessage(m);
+                m = new PingrespMessage(fh, c->ct->readBuff+len, err);
+                std::cout << "[RECV]" << m->getString() << std::endl;
+                err = c->recvPingrespMessage((PingrespMessage*)m);
                 break;
             }
             case DISCONNECT_MESSAGE_TYPE:
             {
-                DisconnectMessage* m = new DisconnectMessage(fh, c->ct->readBuff+len, err);
-                err = c->recvDisconnectMessage(m);
+                m = new DisconnectMessage(fh, c->ct->readBuff+len, err);
+                std::cout << "[RECV]" << m->getString() << std::endl;
+                err = c->recvDisconnectMessage((DisconnectMessage*)m);
                 break;
             }
             default:
