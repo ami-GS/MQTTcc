@@ -9,7 +9,7 @@ Client::Client(const std::string id, const User* user, uint16_t keepAlive, const
 Client::~Client() {}
 
 MQTT_ERROR Client::ping() {
-    MQTT_ERROR err = this->ct->sendMessage(new PingreqMessage());
+    MQTT_ERROR err = this->sendMessage(new PingreqMessage());
     gettimeofday(&(this->timeOfPing), NULL);
     return err;
 }
@@ -17,7 +17,7 @@ MQTT_ERROR Client::ping() {
 void pingLoop(Client* c) {
     while (c->isConnecting) {
         usleep(c->pingDulation);
-        c->ct->sendMessage(new PingrespMessage());
+        c->sendMessage(new PingrespMessage());
         gettimeofday(&(c->timeOfPing), NULL);
     }
 }
