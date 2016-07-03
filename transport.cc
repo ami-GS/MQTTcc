@@ -38,9 +38,6 @@ MQTT_ERROR Transport::sendMessage(Message* m) {
         return SEND_ERROR;
     }
     write(this->sock, this->writeBuff, len);
-    if (m->fh->packetID > 0) {
-        delete m;
-    }
     return NO_ERROR;
 }
 

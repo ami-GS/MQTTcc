@@ -40,12 +40,16 @@ MQTT_ERROR Terminal::sendMessage(Message* m) {
         if (m->fh->type == PUBLISH_MESSAGE_TYPE) {
             if (packetID > 0) {
                 this->packetIDMap[packetID] = m;
+            } else {
+                delete m;
             }
         } else if (m->fh->type == PUBREC_MESSAGE_TYPE || m->fh->type == SUBSCRIBE_MESSAGE_TYPE || m->fh->type == UNSUBSCRIBE_MESSAGE_TYPE || m->fh->type == PUBREL_MESSAGE_TYPE) {
             if (packetID == 0) {
                 return PACKET_ID_SHOULD_NOT_BE_ZERO;
             }
             this->packetIDMap[packetID] = m;
+        } else if (m->fh->packetID == 0) {
+            delete m;
         }
     }
     return err;
