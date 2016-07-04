@@ -67,6 +67,15 @@ enum ConnectReturnCode {
     CONNECT_NOT_AUTHORIZED,
 };
 
+static const std::string ReturnCodeString[] = {
+    "CONNECT_ACCEPTED",
+    "CONNECT_UNNACCEPTABLE_PROTOCOL_VERSION",
+    "CONNECT_IDENTIFIER_REJECTED",
+    "CONNECT_SERVER_UNAVAILABLE",
+    "CONNECT_BAD_USERNAME_OR_PASSWORD",
+    "CONNECT_NOT_AUTHORIZED",
+};
+
 struct Will {
     Will(std::string topic, std::string message, bool retain, uint8_t qos) : topic(topic), message(message), retain(retain), qos(qos) {};
     std::string topic;
