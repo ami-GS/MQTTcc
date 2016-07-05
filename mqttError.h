@@ -66,9 +66,4 @@ static const std::string ErrorString[] = {
    "SEND_ERROR",
 };
 
-void emitError(MQTT_ERROR e) {
-  std::cout << ErrorString[e] << std::endl;
-  return;
-}
-    
 #endif // MQTT_ERROR_H_

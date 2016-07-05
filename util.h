@@ -15,5 +15,6 @@ int32_t remainDecode(const uint8_t* wire, int* len, MQTT_ERROR& err);
 
 int split(std::string str, std::string sub, std::vector<std::string>* parts);
 
+void emitError(MQTT_ERROR e);
 
 #endif //MQTT_UTIL_H_

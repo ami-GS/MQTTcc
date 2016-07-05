@@ -68,3 +68,8 @@ int split(std::string str, std::string sub, std::vector<std::string>* parts) {
   parts->push_back(std::string(str, current, found - current));
   return 1;
 }
+
+void emitError(MQTT_ERROR e) {
+    std::cout << ErrorString[e] << std::endl;
+    return;
+}

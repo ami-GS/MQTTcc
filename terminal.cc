@@ -1,5 +1,6 @@
 #include "terminal.h"
 #include "mqttError.h"
+#include "util.h"
 #include "frame.h"
 #include <random>
 #include <chrono>
@@ -207,6 +208,7 @@ MQTT_ERROR readLoop(Terminal* c) {
                 break;
             }
             if (err != NO_ERROR) {
+                emitError(err);
                 return err;
             }
         }
