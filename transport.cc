@@ -45,11 +45,12 @@ MQTT_ERROR Transport::readMessage() {
      int64_t status = read(this->sock, this->readBuff, sizeof(this->readBuff));
     if (status == -1) {
         /* Error, check errno, take action... */
+        return READ_ERROR;
     } else if (status == 0) {
         /* Peer closed the socket, finish the close */
         close( this->sock );
         /* Further processing... */
-        //return EOF;
+        return PEER_CLOSED;
     }
     return NO_ERROR;
 }

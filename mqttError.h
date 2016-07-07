@@ -33,6 +33,8 @@ enum MQTT_ERROR {
     FAIL_TO_SET_PACKET_ID,
     UNSUBSCRIBE_TO_NON_SUBSCRIBE_TOPIC,
     SEND_ERROR,
+    READ_ERROR,
+    PEER_CLOSED,
 };
 
 static const std::string ErrorString[] = {
@@ -64,6 +66,8 @@ static const std::string ErrorString[] = {
    "FAIL_TO_SET_PACKET_ID",
    "UNSUBSCRIBE_TO_NON_SUBSCRIBE_TOPIC",
    "SEND_ERROR",
+   "READ_ERROR",
+   "PEER_CLOSED",
 };
 
 #endif // MQTT_ERROR_H_
