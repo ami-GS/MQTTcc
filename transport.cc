@@ -4,6 +4,7 @@
 #include <arpa/inet.h>
 #include <unistd.h>
 #include <string.h>
+#include <errno.h>
 #include "transport.h"
 #include "frame.h"
 
@@ -35,9 +36,14 @@ MQTT_ERROR Transport::sendMessage(Message* m) {
     uint64_t len = m->getWire(this->writeBuff);
     if (len == -1) {
         // TODO : more detalied error
+        // m->getWire can return MQTT error potentially
         return SEND_ERROR;
     }
-    write(this->sock, this->writeBuff, len);
+    int64_t status = write(this->sock, this->writeBuff, len);
+    if (status == -1) {
+        perror("Write");
+        return SEND_ERROR;
+    }
     return NO_ERROR;
 }
 
@@ -45,6 +51,7 @@ MQTT_ERROR Transport::readMessage() {
      int64_t status = read(this->sock, this->readBuff, sizeof(this->readBuff));
     if (status == -1) {
         /* Error, check errno, take action... */
+        perror("Read");
         return READ_ERROR;
     } else if (status == 0) {
         /* Peer closed the socket, finish the close */
