@@ -114,35 +114,20 @@ int64_t ConnectMessage::getWire(uint8_t* wire) {
     *(buf++) = (uint8_t)(this->keepAlive >> 8);
     *(buf++) = (uint8_t)this->keepAlive;
     len = UTF8_encode(buf, this->clientID);
-    if (len == -1) {
-        return -1;
-    }
     buf += len;
 
     if ((this->flags & WILL_FLAG) == WILL_FLAG) {
         len = UTF8_encode(buf, this->will->topic);
-        if (len == -1) {
-            return -1;
-        }
         buf += len;
         len = UTF8_encode(buf, this->will->message);
-        if (len == -1) {
-            return -1;
-        }
         buf += len;
     }
     if ((this->flags & USERNAME_FLAG) == USERNAME_FLAG) {
         len = UTF8_encode(buf, this->user->name);
-        if (len == -1) {
-            return -1;
-        }
         buf += len;
     }
     if ((this->flags & PASSWORD_FLAG) == PASSWORD_FLAG) {
         len = UTF8_encode(buf, this->user->passwd);
-        if (len == -1) {
-            return -1;
-        }
         buf += len;
     }
     return buf - wire;
@@ -452,9 +437,6 @@ int64_t SubscribeMessage::getWire(uint8_t* wire) {
     *(buf++) = (uint8_t)this->fh->packetID;
     for (int i = 0; i < this->subTopics.size(); i++) {
         len = UTF8_encode(buf, this->subTopics[i]->topic);
-        if (len == -1) {
-            return -1;
-        }
         buf += len;
         *(buf++) = this->subTopics[i]->qos;
     }
@@ -556,9 +538,6 @@ int64_t UnsubscribeMessage::getWire(uint8_t* wire) {
     int payload_len = 2;
     for (int i = 0; payload_len < this->fh->length; i++) {
         len = UTF8_encode(buf, this->topics[i]);
-        if (len == -1) {
-            return -1;
-        }
         payload_len += len;
         buf += len;
 

@@ -106,6 +106,12 @@ MQTT_ERROR readLoop(Terminal* c) {
         }
         FixedHeader* fh = new FixedHeader();
         int len = fh->parseHeader(c->ct->readBuff, err);
+        if (err != NO_ERROR) {
+            // decide how is this delt with depends on error type
+            // if not significant error, then zeroclear the buff and continue
+            emitError(err);
+            return err;
+        }
         Message* m;
         switch (fh->type) {
         case CONNECT_MESSAGE_TYPE:
